@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 import { Mood, CheckinContext } from '@/types';
@@ -7,12 +7,12 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { MoodSuggestions } from '@/components/MoodSuggestions';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Flame } from 'lucide-react';
 
 const MORNING_QUESTIONS = [
   'Was ist deine Intention für heute?',
   'Was ist das Erste, worauf du dich heute freust?',
-  'Was könnte heute herausfordernd werden — und wie gehst du damit um?',
+  'Was könnte heute herausfordernd werden - und wie gehst du damit um?',
 ];
 
 const EVENING_QUESTIONS = [
@@ -36,7 +36,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [quickWin, setQuickWin] = useState('');
   const [hasQuickWin, setHasQuickWin] = useState<boolean | null>(null);
 
-  const { saveMood, saveAnswers, saveQuickWin, completeCheckin } = useAppStore();
+  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile } = useAppStore();
   const questions = context === 'morning' ? MORNING_QUESTIONS : EVENING_QUESTIONS;
 
   const handleMoodNext = () => {
@@ -55,7 +55,22 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
       } else {
         completeCheckin(context);
         setStep('done');
-        setTimeout(onComplete, 1500);
+        setTimeout(onComplete, 2500);
+      }
+    }
+  };
+
+  const handleSkipQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion((q) => q + 1);
+    } else {
+      saveAnswers(answers, context);
+      if (context === 'evening') {
+        setStep('quickwin');
+      } else {
+        completeCheckin(context);
+        setStep('done');
+        setTimeout(onComplete, 2500);
       }
     }
   };
@@ -66,13 +81,12 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     }
     completeCheckin(context);
     setStep('done');
-    setTimeout(onComplete, 1500);
+    setTimeout(onComplete, 2500);
   };
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-lg mx-auto px-4">
       <AnimatePresence mode="wait">
-        {/* Schritt 1: Mood */}
         {step === 'mood' && (
           <motion.div
             key="mood"
@@ -83,18 +97,13 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
           >
             <div className="text-center">
               <h2 className="text-xl font-semibold">
-                {context === 'morning' ? '🌅 Guten Morgen' : '🌙 Guten Abend'}
+                {context === 'morning' ? 'Guten Morgen' : 'Guten Abend'}
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {context === 'morning' ? 'Starte deinen Tag bewusst' : 'Reflektiere deinen Tag'}
               </p>
             </div>
             <MoodPicker selected={selectedMood} onChange={setSelectedMood} />
-            {selectedMood && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <MoodSuggestions mood={selectedMood} context={context} />
-              </motion.div>
-            )}
             <Button
               onClick={handleMoodNext}
               disabled={!selectedMood}
@@ -105,7 +114,6 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
           </motion.div>
         )}
 
-        {/* Schritt 2: Fragen */}
         {step === 'questions' && (
           <motion.div
             key={`q-${currentQuestion}`}
@@ -143,15 +151,20 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               className="w-full"
             >
               {currentQuestion < questions.length - 1 ? (
-                <>Weiter <ChevronRight className="ml-1 w-4 h-4" /></>
+                <span className="flex items-center gap-1">Weiter <ChevronRight className="w-4 h-4" /></span>
               ) : (
                 'Abschließen'
               )}
             </Button>
+            <button
+              onClick={handleSkipQuestion}
+              className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors py-1"
+            >
+              Überspringen
+            </button>
           </motion.div>
         )}
 
-        {/* Schritt 3: Quick Win (nur Abend) */}
         {step === 'quickwin' && (
           <motion.div
             key="quickwin"
@@ -161,7 +174,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             className="flex flex-col gap-4"
           >
             <div className="text-center">
-              <h2 className="text-xl font-semibold">⚡ Quick Win</h2>
+              <h2 className="text-xl font-semibold">Quick Win</h2>
               <p className="text-sm text-muted-foreground mt-1">
                 Hattest du heute einen schnellen Erfolg, der echten Wert hatte?
               </p>
@@ -172,7 +185,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 className="flex-1"
                 onClick={() => setHasQuickWin(true)}
               >
-                Ja! ⚡
+                Ja!
               </Button>
               <Button
                 variant={hasQuickWin === false ? 'default' : 'outline'}
@@ -204,21 +217,49 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
           </motion.div>
         )}
 
-        {/* Schritt 4: Done */}
         {step === 'done' && (
           <motion.div
             key="done"
-            initial={{ opacity: 0, scale: 0.8 }}
+            initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="flex flex-col items-center gap-4 py-8 text-center"
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+            className="flex flex-col items-center gap-5 py-6 text-center"
           >
-            <CheckCircle2 className="w-16 h-16 text-green-500" />
-            <h2 className="text-xl font-semibold">Check-in abgeschlossen! 🎉</h2>
-            <p className="text-sm text-muted-foreground">
-              {context === 'morning'
-                ? 'Du hast deinen Tag bewusst gestartet.'
-                : 'Gut gemacht — du hast reflektiert!'}
-            </p>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.1, type: 'spring', stiffness: 400, damping: 15 }}
+            >
+              <CheckCircle2 className="w-16 h-16 text-green-500" />
+            </motion.div>
+            <div>
+              <h2 className="text-xl font-semibold">
+                {context === 'morning' ? 'Top! Tag bewusst gestartet.' : 'Gut gemacht! Tag reflektiert.'}
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                {context === 'morning'
+                  'Du hast eine starke Grundlage für heute gelegt.'
+                  : 'Regelmäßige Reflexion macht einen echten Unterschied.'}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-950 rounded-2xl px-5 py-3">
+              <Flame className="w-5 h-5 text-orange-500" />
+              <span className="font-bold text-lg">{profile.streak}</span>
+              <span className="text-sm text-muted-foreground">Tage Streak</span>
+            </div>
+            {selectedMood && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="w-full"
+              >
+                <MoodSuggestions mood={selectedMood} context={context} />
+              </motion.div>
+            )}
+            <Button onClick={onComplete} className="w-full mt-2">
+              Fertig
+            </Button>
           </motion.div>
         )}
       </AnimatePresence>
