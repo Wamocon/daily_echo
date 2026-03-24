@@ -34,6 +34,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Onboarding-Pflicht: lokales Profil prüfen ohne Zustand-Overhead
+    if (pathname !== '/onboarding') {
+      try {
+        const raw = localStorage.getItem('dailyecho_profile');
+        const profile = raw ? JSON.parse(raw) : null;
+        if (profile && !profile.onboarding_complete) {
+          router.replace('/onboarding');
+          return;
+        }
+      } catch { /* ignore parse errors */ }
+    }
+
     // Check feature-level permissions
     const requiredPermission = ROUTE_PERMISSIONS[pathname];
     if (requiredPermission && !canAccess(currentUser.role, requiredPermission)) {

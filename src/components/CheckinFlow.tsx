@@ -7,19 +7,8 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { MoodSuggestions } from '@/components/MoodSuggestions';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Flame } from 'lucide-react';
-
-const MORNING_QUESTIONS = [
-  'Was ist deine Intention für heute?',
-  'Was ist das Erste, worauf du dich heute freust?',
-  'Was könnte heute herausfordernd werden - und wie gehst du damit um?',
-];
-
-const EVENING_QUESTIONS = [
-  'Was war heute dein schönster Moment?',
-  'Was hat dich heute belastet oder Energie gekostet?',
-  'Was nimmst du dir aus dem heutigen Tag mit?',
-];
+import { ChevronRight, CheckCircle2, Flame, Plus } from 'lucide-react';
+import { getCoreQuestions, pickRandomOptional, Question } from '@/lib/questions';
 
 interface CheckinFlowProps {
   context: CheckinContext;
@@ -35,9 +24,14 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [quickWin, setQuickWin] = useState('');
   const [hasQuickWin, setHasQuickWin] = useState<boolean | null>(null);
+  const [extraQuestions, setExtraQuestions] = useState<Question[]>([]);
+  const [usedOptionalIds, setUsedOptionalIds] = useState<string[]>([]);
+  const [usedPromptLibrary, setUsedPromptLibrary] = useState(false);
 
   const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile } = useAppStore();
-  const questions = context === 'morning' ? MORNING_QUESTIONS : EVENING_QUESTIONS;
+  const coreQuestions = getCoreQuestions(context);
+  const allQuestions = [...coreQuestions, ...extraQuestions];
+  const MAX_OPTIONAL = 2;
 
   const handleMoodNext = () => {
     if (!selectedMood) return;
@@ -45,15 +39,24 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     setStep('questions');
   };
 
+  const handleAddOptionalQuestion = () => {
+    const next = pickRandomOptional(context, usedOptionalIds);
+    if (!next) return;
+    setExtraQuestions((prev) => [...prev, next]);
+    setUsedOptionalIds((prev) => [...prev, next.id]);
+    setAnswers((prev) => [...prev, '']);
+    setUsedPromptLibrary(true);
+  };
+
   const handleAnswerNext = () => {
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < allQuestions.length - 1) {
       setCurrentQuestion((q) => q + 1);
     } else {
       saveAnswers(answers, context);
       if (context === 'evening') {
         setStep('quickwin');
       } else {
-        completeCheckin(context);
+        completeCheckin(context, usedPromptLibrary);
         setStep('done');
         setTimeout(onComplete, 2500);
       }
@@ -61,14 +64,14 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   };
 
   const handleSkipQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
+    if (currentQuestion < allQuestions.length - 1) {
       setCurrentQuestion((q) => q + 1);
     } else {
       saveAnswers(answers, context);
       if (context === 'evening') {
         setStep('quickwin');
       } else {
-        completeCheckin(context);
+        completeCheckin(context, usedPromptLibrary);
         setStep('done');
         setTimeout(onComplete, 2500);
       }
@@ -79,10 +82,17 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (hasQuickWin && quickWin.trim()) {
       saveQuickWin(quickWin.trim());
     }
-    completeCheckin(context);
+    completeCheckin(context, usedPromptLibrary);
     setStep('done');
     setTimeout(onComplete, 2500);
   };
+
+  const isLastCoreQuestion = currentQuestion === coreQuestions.length - 1;
+  const isLastQuestion = currentQuestion === allQuestions.length - 1;
+  const availableOptionalCount = (context === 'morning' ? 6 : 6) - usedOptionalIds.length;
+  const canAddMore = extraQuestions.length < MAX_OPTIONAL && availableOptionalCount > 0;
+
+  void isLastCoreQuestion; // used for future styling
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-lg mx-auto px-4">
@@ -123,7 +133,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             className="flex flex-col gap-4"
           >
             <div className="flex gap-1 justify-center">
-              {questions.map((_, i) => (
+              {allQuestions.map((_, i) => (
                 <div
                   key={i}
                   className={`h-1 flex-1 rounded-full transition-colors ${
@@ -132,25 +142,42 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 />
               ))}
             </div>
+            {currentQuestion >= coreQuestions.length && (
+              <span className="text-[10px] text-primary font-medium uppercase tracking-wide text-center">
+                📖 Aus der Fragebibliothek
+              </span>
+            )}
             <p className="text-base font-medium text-center mt-2">
-              {questions[currentQuestion]}
+              {allQuestions[currentQuestion].text}
             </p>
             <textarea
               className="w-full rounded-xl border bg-card p-4 text-sm resize-none min-h-[120px] focus:outline-none focus:ring-2 focus:ring-primary/50"
               placeholder="Schreib einfach drauflos..."
-              value={answers[currentQuestion]}
+              value={answers[currentQuestion] ?? ''}
               onChange={(e) => {
                 const next = [...answers];
                 next[currentQuestion] = e.target.value;
                 setAnswers(next);
               }}
             />
+            {/* "Weitere Frage" — erscheint nach letzter Pflichtfrage */}
+            {isLastQuestion && canAddMore && (
+              <motion.button
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={handleAddOptionalQuestion}
+                className="flex items-center justify-center gap-1.5 text-xs text-primary hover:text-primary/80 transition-colors border border-primary/30 rounded-xl py-2"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Weitere Frage aus der Bibliothek
+              </motion.button>
+            )}
             <Button
               onClick={handleAnswerNext}
-              disabled={!answers[currentQuestion].trim()}
+              disabled={!answers[currentQuestion]?.trim()}
               className="w-full"
             >
-              {currentQuestion < questions.length - 1 ? (
+              {!isLastQuestion ? (
                 <span className="flex items-center gap-1">Weiter <ChevronRight className="w-4 h-4" /></span>
               ) : (
                 'Abschließen'

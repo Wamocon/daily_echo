@@ -75,6 +75,17 @@ export function loginUser(account: DemoAccount): AuthUser {
   return user;
 }
 
+export function registerUser(name: string): AuthUser {
+  const user: AuthUser = {
+    id: `user-${Date.now()}`,
+    name,
+    role: 'user',
+    created_at: new Date().toISOString(),
+  };
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+  return user;
+}
+
 export function logoutUser(): void {
   localStorage.removeItem(AUTH_KEY);
 }

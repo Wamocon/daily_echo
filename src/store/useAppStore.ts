@@ -9,6 +9,14 @@ import {
 import { calculateStreak, todayISO } from '@/lib/streaks';
 import { checkAchievements } from '@/lib/achievements';
 
+interface OnboardingData {
+  name: string;
+  age: number;
+  job: string;
+  goal: string;
+  weeklyQuickWinTarget: number;
+}
+
 interface AppState {
   profile: UserProfile;
   todayEntry: DailyEntry | null;
@@ -21,9 +29,11 @@ interface AppState {
   saveMood: (mood: Mood, context: CheckinContext) => void;
   saveAnswers: (answers: string[], context: CheckinContext) => void;
   saveQuickWin: (text: string) => void;
-  completeCheckin: (context: CheckinContext) => void;
+  completeCheckin: (context: CheckinContext, usedPromptLibrary?: boolean) => void;
   useStreakFreeze: () => void;
   clearNewlyUnlocked: () => void;
+  saveOnboardingProfile: (data: OnboardingData) => void;
+  updateProfile: (updates: Partial<UserProfile>) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -43,7 +53,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       checkins: getWeeklyCheckins(),
       checkinGoal: 5,
       quickwins: getWeeklyQuickWins(),
-      quickwinGoal: 2,
+      quickwinGoal: profile.weekly_quickwin_target ?? 2,
     };
     set({ profile, todayEntry: entry, unlockedAchievements: unlockedIds, weeklyGoal, isInitialized: true });
   },
@@ -88,7 +98,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
   },
 
-  completeCheckin: (context) => {
+  completeCheckin: (context, usedPromptLibrary = false) => {
     const { todayEntry, profile, unlockedAchievements } = get();
     if (!todayEntry) return;
 
@@ -108,7 +118,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     };
     saveProfile(updatedProfile);
 
-    const newAchievements = checkAchievements(updatedProfile, updated, unlockedAchievements);
+    const newAchievements = checkAchievements(updatedProfile, updated, unlockedAchievements, usedPromptLibrary);
     newAchievements.forEach((id) => unlockAchievement(id));
     const allUnlocked = [...unlockedAchievements, ...newAchievements];
 
@@ -130,4 +140,35 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   clearNewlyUnlocked: () => set({ newlyUnlocked: [] }),
+
+  saveOnboardingProfile: (data) => {
+    const { profile, unlockedAchievements } = get();
+    const updated: UserProfile = {
+      ...profile,
+      onboarding_name: data.name,
+      onboarding_age: data.age,
+      onboarding_job: data.job,
+      onboarding_goal: data.goal,
+      weekly_quickwin_target: data.weeklyQuickWinTarget,
+      display_name: data.name,
+      onboarding_complete: true,
+    };
+    saveProfile(updated);
+    const newAchievements = checkAchievements(updated, get().todayEntry!, unlockedAchievements, false);
+    newAchievements.forEach((id) => unlockAchievement(id));
+    const allUnlocked = [...unlockedAchievements, ...newAchievements];
+    set({
+      profile: updated,
+      weeklyGoal: { ...get().weeklyGoal, quickwinGoal: data.weeklyQuickWinTarget },
+      unlockedAchievements: allUnlocked,
+      newlyUnlocked: newAchievements,
+    });
+  },
+
+  updateProfile: (updates) => {
+    const { profile } = get();
+    const updated = { ...profile, ...updates };
+    saveProfile(updated);
+    set({ profile: updated });
+  },
 }));

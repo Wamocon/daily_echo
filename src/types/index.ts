@@ -52,6 +52,13 @@ export interface UserProfile {
   last_checkin_date: string | null;
   total_checkins: number;
   total_quickwins: number;
+  // Onboarding
+  onboarding_name: string | null;
+  onboarding_age: number | null;
+  onboarding_job: string | null;
+  onboarding_goal: string | null;
+  weekly_quickwin_target: number;
+  onboarding_complete: boolean;
 }
 
 export interface UserAchievement {
@@ -69,7 +76,8 @@ export type AchievementId =
   | 'first_win'
   | 'on_a_roll'
   | 'both_worlds'
-  | 'deep_diver';
+  | 'deep_diver'
+  | 'goal_setter';
 
 export interface Achievement {
   id: AchievementId;

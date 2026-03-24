@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { name: 'Quick Wins', url: '/quickwins', icon: Zap, permission: 'check-in' },
   { name: 'Erfolge', url: '/achievements', icon: Trophy, permission: 'achievements' },
   { name: 'Erinnerungen', url: '/notifications', icon: Bell, permission: 'check-in' },
+  { name: 'Profil', url: '/profile', icon: User, permission: null },
   { name: 'Admin', url: '/admin', icon: ShieldCheck, permission: 'admin-panel' },
 ];
 
