@@ -2,6 +2,30 @@ import { CheckinContext, Mood, MoodSuggestion } from '@/types';
 
 type SuggestionMap = Record<Mood, Record<CheckinContext, MoodSuggestion[]>>;
 
+/** Tägliche Rotation: Deterministischer Seed basierend auf dem Datum */
+function getDaySeed(): number {
+  const d = new Date();
+  return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+}
+
+function seededShuffle<T>(arr: T[], seed: number): T[] {
+  const a = [...arr];
+  let s = seed;
+  for (let i = a.length - 1; i > 0; i--) {
+    s = (s * 1664525 + 1013904223) & 0xffffffff;
+    const j = Math.abs(s) % (i + 1);
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/** Gibt täglich andere Suggestions zurück (rotiert, aber reproduzierbar pro Tag) */
+export function getSuggestions(mood: Mood, context: CheckinContext): MoodSuggestion[] {
+  const all = MOOD_SUGGESTIONS[mood][context];
+  const seed = getDaySeed() + mood * 31 + (context === 'evening' ? 17 : 0);
+  return seededShuffle(all, seed);
+}
+
 export const MOOD_SUGGESTIONS: SuggestionMap = {
   1: {
     morning: [
@@ -59,7 +83,3 @@ export const MOOD_SUGGESTIONS: SuggestionMap = {
     ],
   },
 };
-
-export function getSuggestions(mood: Mood, context: CheckinContext): MoodSuggestion[] {
-  return MOOD_SUGGESTIONS[mood][context];
-}
