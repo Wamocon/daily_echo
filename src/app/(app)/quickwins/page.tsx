@@ -7,6 +7,7 @@ import { QuickWin } from '@/types';
 import { getAllQuickWins, addQuickWin, deleteQuickWin, getQuickWinsForWeek } from '@/lib/storage';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useAppStore } from '@/store/useAppStore';
 
 function getISOWeek(date: Date): string {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -35,12 +36,13 @@ function toISO(date: Date): string {
 
 export default function QuickWinsPage() {
   const today = new Date();
+  const { profile } = useAppStore();
   const [currentWeek, setCurrentWeek] = useState(getISOWeek(today));
   const [weekWins, setWeekWins] = useState<QuickWin[]>([]);
   const [allByWeek, setAllByWeek] = useState<Record<string, QuickWin[]>>({});
   const [newText, setNewText] = useState('');
   const [isAdding, setIsAdding] = useState(false);
-  const GOAL = 2;
+  const GOAL = profile.weekly_quickwin_target ?? 2;
 
   const loadData = () => {
     const wins = getAllQuickWins();
@@ -96,7 +98,7 @@ export default function QuickWinsPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold leading-none">Quick Wins</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">2 pro Woche — halte deine Erfolge fest</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{GOAL} pro Woche — halte deine Erfolge fest</p>
           </div>
         </div>
 

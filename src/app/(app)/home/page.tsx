@@ -50,11 +50,16 @@ export default function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold">
             {isMorningTime ? 'Guten Morgen' : isEveningTime ? 'Guten Abend' : 'Hallo'}
-            {profile.display_name ? `, ${profile.display_name}` : ''}! 👋
+            {profile.onboarding_name ? `, ${profile.onboarding_name}` : profile.display_name ? `, ${profile.display_name}` : ''}! 👋
           </h1>
           <p className="text-muted-foreground mt-1 text-sm">
             {new Date().toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long' })}
           </p>
+          {profile.onboarding_goal && (
+            <p className="text-xs text-primary/70 mt-1.5 font-medium">
+              🎯 Dein Ziel: {profile.onboarding_goal}
+            </p>
+          )}
         </div>
 
         {/* Primärer CTA — nur wenn noch etwas zu tun ist */}

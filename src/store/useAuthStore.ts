@@ -2,7 +2,7 @@
 
 import { create } from 'zustand';
 import { AuthUser } from '@/types';
-import { getCurrentUser, loginUser, logoutUser, DemoAccount } from '@/lib/auth';
+import { getCurrentUser, loginUser, loginByEmail, logoutUser, DemoAccount } from '@/lib/auth';
 
 interface AuthState {
   currentUser: AuthUser | null;
@@ -10,6 +10,7 @@ interface AuthState {
 
   initAuth: () => void;
   login: (account: DemoAccount) => void;
+  loginWithEmail: (email: string) => AuthUser | null;
   logout: () => void;
 }
 
@@ -25,6 +26,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: (account) => {
     const user = loginUser(account);
     set({ currentUser: user });
+  },
+
+  loginWithEmail: (email) => {
+    const user = loginByEmail(email);
+    if (user) set({ currentUser: user });
+    return user;
   },
 
   logout: () => {

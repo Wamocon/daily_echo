@@ -1,14 +1,15 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, PenLine, BookOpen, User } from 'lucide-react';
+import { Home, PenLine, BookOpen, User, CalendarDays } from 'lucide-react';
 import { NavBar } from '@/components/ui/tubelight-navbar';
 
 const navItems = [
   { name: 'Home', url: '/home', icon: Home },
   { name: 'Check-in', url: '/checkin', icon: PenLine },
   { name: 'Verlauf', url: '/history', icon: BookOpen },
-  { name: 'Kalender', url: '/calendar', icon: User },
+  { name: 'Kalender', url: '/calendar', icon: CalendarDays },
+  { name: 'Profil', url: '/profile', icon: User },
 ];
 
 export function AppNavBar() {

@@ -31,6 +31,12 @@ function defaultProfile(): UserProfile {
     last_checkin_date: null,
     total_checkins: 0,
     total_quickwins: 0,
+    onboarding_name: null,
+    onboarding_age: null,
+    onboarding_job: null,
+    onboarding_goal: null,
+    weekly_quickwin_target: 2,
+    onboarding_complete: false,
   };
 }
 
