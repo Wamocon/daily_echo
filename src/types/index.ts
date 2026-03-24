@@ -20,9 +20,26 @@ export interface DailyEntry {
   evening_mood: Mood | null;
   morning_answers: string[] | null; // 3 Antworten
   evening_answers: string[] | null;
+  journal_text: string | null;      // Freies Journaling
   has_quickwin: boolean;
   quickwin_text: string | null;
   created_at: string;
+}
+
+export interface QuickWin {
+  id: string;
+  user_id: string;
+  text: string;
+  date: string;       // ISO date
+  week: string;       // ISO week "2026-W12"
+  created_at: string;
+}
+
+export interface NotificationPrefs {
+  enabled: boolean;
+  morningTime: string;  // "08:00"
+  eveningTime: string;  // "19:00"
+  quickwinReminder: boolean;
 }
 
 export interface UserProfile {

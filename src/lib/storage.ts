@@ -1,9 +1,11 @@
-import { DailyEntry, UserProfile, UserAchievement, AchievementId } from '@/types';
+import { DailyEntry, UserProfile, UserAchievement, AchievementId, QuickWin, NotificationPrefs } from '@/types';
 
 const KEYS = {
   profile: 'dailyecho_profile',
   entries: 'dailyecho_entries',
   achievements: 'dailyecho_achievements',
+  quickwins: 'dailyecho_quickwins',
+  notifPrefs: 'dailyecho_notif_prefs',
 };
 
 // ─── Profile ─────────────────────────────────────────────────────────────────
@@ -66,6 +68,7 @@ export function createEmptyEntry(date: string): DailyEntry {
     evening_mood: null,
     morning_answers: null,
     evening_answers: null,
+    journal_text: null,
     has_quickwin: false,
     quickwin_text: null,
     created_at: new Date().toISOString(),
@@ -133,4 +136,75 @@ export function getOnThisDay(): DailyEntry[] {
     const entryMMDD = e.entry_date.slice(5);
     return entryMMDD === mmdd && e.entry_date !== todayISO;
   });
+}
+
+// ─── Journal ──────────────────────────────────────────────────────────────────
+
+export function saveJournal(date: string, text: string): void {
+  const entry = getEntryByDate(date) ?? createEmptyEntry(date);
+  saveEntry({ ...entry, journal_text: text });
+}
+
+// ─── Quick Wins (eigenständige Liste) ────────────────────────────────────────
+
+export function getAllQuickWins(): QuickWin[] {
+  if (typeof window === 'undefined') return [];
+  const raw = localStorage.getItem(KEYS.quickwins);
+  return raw ? JSON.parse(raw) : [];
+}
+
+function getISOWeek(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2, '0')}`;
+}
+
+export function addQuickWin(text: string, date: string): QuickWin {
+  const wins = getAllQuickWins();
+  const win: QuickWin = {
+    id: crypto.randomUUID(),
+    user_id: 'local-user',
+    text,
+    date,
+    week: getISOWeek(new Date(date)),
+    created_at: new Date().toISOString(),
+  };
+  wins.push(win);
+  localStorage.setItem(KEYS.quickwins, JSON.stringify(wins));
+  return win;
+}
+
+export function deleteQuickWin(id: string): void {
+  const wins = getAllQuickWins().filter((w) => w.id !== id);
+  localStorage.setItem(KEYS.quickwins, JSON.stringify(wins));
+}
+
+export function getQuickWinsForWeek(week?: string): QuickWin[] {
+  const targetWeek = week ?? getISOWeek(new Date());
+  return getAllQuickWins().filter((w) => w.week === targetWeek);
+}
+
+export function getQuickWinsForDate(date: string): QuickWin[] {
+  return getAllQuickWins().filter((w) => w.date === date);
+}
+
+// ─── Notification Preferences ────────────────────────────────────────────────
+
+const defaultNotifPrefs = (): NotificationPrefs => ({
+  enabled: false,
+  morningTime: '08:00',
+  eveningTime: '19:00',
+  quickwinReminder: true,
+});
+
+export function getNotifPrefs(): NotificationPrefs {
+  if (typeof window === 'undefined') return defaultNotifPrefs();
+  const raw = localStorage.getItem(KEYS.notifPrefs);
+  return raw ? { ...defaultNotifPrefs(), ...JSON.parse(raw) } : defaultNotifPrefs();
+}
+
+export function saveNotifPrefs(prefs: NotificationPrefs): void {
+  localStorage.setItem(KEYS.notifPrefs, JSON.stringify(prefs));
 }
