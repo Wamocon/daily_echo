@@ -9,6 +9,9 @@ const ROUTE_PERMISSIONS: Record<string, string> = {
   '/checkin': 'check-in',
   '/achievements': 'achievements',
   '/history': 'history',
+  '/calendar': 'history',
+  '/quickwins': 'check-in',
+  '/notifications': 'check-in',
   '/admin': 'admin-panel',
 };
 

@@ -1,15 +1,16 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, PenLine, Trophy, BookOpen } from 'lucide-react';
+import { Home, PenLine, Trophy, CalendarDays, Zap } from 'lucide-react';
 import { NavBar } from '@/components/ui/tubelight-navbar';
 import { ThemeSwitch } from '@/components/ThemeSwitch';
 
 const navItems = [
   { name: 'Home', url: '/home', icon: Home },
   { name: 'Check-in', url: '/checkin', icon: PenLine },
+  { name: 'Kalender', url: '/calendar', icon: CalendarDays },
+  { name: 'Quick Wins', url: '/quickwins', icon: Zap },
   { name: 'Erfolge', url: '/achievements', icon: Trophy },
-  { name: 'Verlauf', url: '/history', icon: BookOpen },
 ];
 
 export function AppNavBar() {
