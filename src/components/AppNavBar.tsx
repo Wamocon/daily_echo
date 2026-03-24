@@ -3,9 +3,10 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, PenLine, Trophy, BookOpen } from 'lucide-react';
 import { NavBar } from '@/components/ui/tubelight-navbar';
+import { ThemeSwitch } from '@/components/ThemeSwitch';
 
 const navItems = [
-  { name: 'Home', url: '/', icon: Home },
+  { name: 'Home', url: '/home', icon: Home },
   { name: 'Check-in', url: '/checkin', icon: PenLine },
   { name: 'Erfolge', url: '/achievements', icon: Trophy },
   { name: 'Verlauf', url: '/history', icon: BookOpen },
@@ -22,8 +23,11 @@ export function AppNavBar() {
   }));
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 flex justify-center pb-4 px-4">
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-center pb-4 px-4 gap-3">
       <NavBar items={items} />
+      <div className="bg-card/80 backdrop-blur-md border border-border rounded-full flex items-center justify-center shadow-lg">
+        <ThemeSwitch />
+      </div>
     </div>
   );
 }

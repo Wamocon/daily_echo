@@ -1,3 +1,12 @@
+export type UserRole = 'admin' | 'user' | 'guest';
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  role: UserRole;
+  created_at: string;
+}
+
 export type Mood = 1 | 2 | 3 | 4 | 5;
 export type CheckinContext = 'morning' | 'evening';
 
