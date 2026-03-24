@@ -11,10 +11,10 @@ import { ThemeSwitch } from '@/components/ThemeSwitch';
 const NAV_ITEMS = [
   { name: 'Dashboard', url: '/home', icon: Home, permission: null },
   { name: 'Check-in', url: '/checkin', icon: PenLine, permission: 'check-in' },
+  { name: 'Verlauf', url: '/history', icon: BookOpen, permission: 'history' },
   { name: 'Kalender', url: '/calendar', icon: CalendarDays, permission: 'history' },
   { name: 'Quick Wins', url: '/quickwins', icon: Zap, permission: 'check-in' },
   { name: 'Erfolge', url: '/achievements', icon: Trophy, permission: 'achievements' },
-  { name: 'Verlauf', url: '/history', icon: BookOpen, permission: 'history' },
   { name: 'Erinnerungen', url: '/notifications', icon: Bell, permission: 'check-in' },
   { name: 'Admin', url: '/admin', icon: ShieldCheck, permission: 'admin-panel' },
 ];

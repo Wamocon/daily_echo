@@ -55,47 +55,40 @@ export default function NotificationsPage() {
 
   return (
     <div className="min-h-screen px-4 pt-8 pb-32 lg:pb-8 max-w-2xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-6"
-      >
+      <div className="flex flex-col gap-6">
         {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-            <Bell className="w-5 h-5 text-blue-500" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold leading-none">Erinnerungen</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">Browser-Benachrichtigungen konfigurieren</p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold">Erinnere mich täglich</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            DailyEcho erinnert dich morgens und abends an deinen Check-in.
+          </p>
         </div>
 
         {/* Permission Status */}
         {!notifSupported ? (
           <div className="bg-muted/50 border border-dashed rounded-2xl p-4 flex items-center gap-3 text-sm text-muted-foreground">
             <AlertCircle className="w-4 h-4 shrink-0" />
-            Dein Browser unterstützt keine Benachrichtigungen.
+            Dein Browser unterstützt leider keine Benachrichtigungen. Bitte nutze Chrome oder Edge.
           </div>
         ) : permission === 'denied' ? (
           <div className="bg-destructive/10 border border-destructive/20 rounded-2xl p-4 flex items-start gap-3">
             <BellOff className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
             <div>
-              <p className="text-sm font-medium text-destructive">Benachrichtigungen blockiert</p>
+              <p className="text-sm font-medium text-destructive">Erinnerungen deaktiviert</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Bitte erlaube Benachrichtigungen in den Browser-Einstellungen für diese Seite und lade dann neu.
+                Geh in die Browser-Einstellungen → Benachrichtigungen → diese Seite erlauben, dann neu laden.
               </p>
             </div>
           </div>
         ) : permission === 'default' ? (
           <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 flex flex-col gap-3">
-            <p className="text-sm font-medium">Benachrichtigungen aktivieren</p>
+            <p className="text-sm font-medium">Erinnerungen einschalten</p>
             <p className="text-xs text-muted-foreground">
-              DailyEcho kann dich morgens und abends an deinen Check-in erinnern sowie freitags an die Quick Wins.
+              Wähle deine Uhrzeiten für den Morgen- und Abend-Check-in — DailyEcho erinnert dich dann täglich.
             </p>
             <Button onClick={handleEnable} size="sm" className="self-start gap-2">
               <Bell className="w-4 h-4" />
-              Erlauben & aktivieren
+              Erinnerungen aktivieren
             </Button>
           </div>
         ) : (
@@ -119,8 +112,8 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-3">
                 <Bell className={cn('w-4 h-4', prefs.enabled ? 'text-primary' : 'text-muted-foreground')} />
                 <div>
-                  <p className="text-sm font-medium">Erinnerungen aktiv</p>
-                  <p className="text-xs text-muted-foreground">Alle Benachrichtigungen ein/aus</p>
+                  <p className="text-sm font-medium">Erinnerungen einschalten</p>
+                  <p className="text-xs text-muted-foreground">Alles an oder aus</p>
                 </div>
               </div>
               <Switch
@@ -138,8 +131,8 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-yellow-500" />
                 <div>
-                  <p className="text-sm font-medium">Morgen-Erinnerung</p>
-                  <p className="text-xs text-muted-foreground">Täglich für den Morgen-Check-in</p>
+                  <p className="text-sm font-medium">🌅 Morgens erinnern um</p>
+                  <p className="text-xs text-muted-foreground">Für den Morgen-Check-in</p>
                 </div>
               </div>
               <input
@@ -158,8 +151,8 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-3">
                 <Clock className="w-4 h-4 text-indigo-500" />
                 <div>
-                  <p className="text-sm font-medium">Abend-Erinnerung</p>
-                  <p className="text-xs text-muted-foreground">Täglich für den Abend-Check-in</p>
+                  <p className="text-sm font-medium">🌙 Abends erinnern um</p>
+                  <p className="text-xs text-muted-foreground">Für den Abend-Check-in</p>
                 </div>
               </div>
               <input
@@ -178,8 +171,8 @@ export default function NotificationsPage() {
               <div className="flex items-center gap-3">
                 <Zap className="w-4 h-4 text-amber-500" />
                 <div>
-                  <p className="text-sm font-medium">Quick Win Erinnerung</p>
-                  <p className="text-xs text-muted-foreground">Freitags: Hast du 2 Quick Wins erfasst?</p>
+                  <p className="text-sm font-medium">⚡ Quick Win Tipp freitags</p>
+                  <p className="text-xs text-muted-foreground">Freitagnachmittag: Woche zusammenfassen</p>
                 </div>
               </div>
               <Switch
@@ -196,7 +189,7 @@ export default function NotificationsPage() {
             {saving ? 'Speichern…' : saved ? '✓ Gespeichert' : 'Einstellungen speichern'}
           </Button>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

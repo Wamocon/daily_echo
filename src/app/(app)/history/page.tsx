@@ -48,11 +48,7 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen px-4 pt-12 pb-32 max-w-lg mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-6"
-      >
+      <div className="flex flex-col gap-6">
         <h1 className="text-2xl font-bold">Verlauf</h1>
 
         {onThisDay.length > 0 && (
@@ -76,7 +72,7 @@ export default function HistoryPage() {
             {entries.map((e) => <EntryCard key={e.id} entry={e} />)}
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

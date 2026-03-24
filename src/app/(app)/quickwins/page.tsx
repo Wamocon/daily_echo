@@ -88,11 +88,7 @@ export default function QuickWinsPage() {
 
   return (
     <div className="min-h-screen px-4 pt-8 pb-32 lg:pb-8 max-w-2xl mx-auto">
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col gap-6"
-      >
+      <div className="flex flex-col gap-6">
         {/* Header */}
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
@@ -242,7 +238,7 @@ export default function QuickWinsPage() {
             </div>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }
