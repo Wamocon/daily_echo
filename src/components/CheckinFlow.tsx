@@ -238,7 +238,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {context === 'morning'
-                  'Du hast eine starke Grundlage für heute gelegt.'
+                  ? 'Du hast eine starke Grundlage für heute gelegt.'
                   : 'Regelmäßige Reflexion macht einen echten Unterschied.'}
               </p>
             </div>
