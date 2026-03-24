@@ -11,6 +11,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'both_worlds', label: 'Both Worlds', emoji: '☯️', description: 'Morgen & Abend am selben Tag' },
   { id: 'deep_diver', label: 'Deep Diver', emoji: '📖', description: 'Prompt aus der Bibliothek genutzt' },
   { id: 'goal_setter', label: 'Goal Setter', emoji: '🎯', description: 'Onboarding abgeschlossen & Ziel gesetzt' },
+  { id: 'loop_closed', label: 'Loop Closed', emoji: '🔄', description: '5x Morgen-Intention mit Abend verbunden' },
 ];
 
 export function checkAchievements(
@@ -52,6 +53,9 @@ export function checkAchievements(
   }
   if (!has('goal_setter') && profile.onboarding_complete) {
     newUnlocks.push('goal_setter');
+  }
+  if (!has('loop_closed') && (profile.loop_closed_count ?? 0) >= 5) {
+    newUnlocks.push('loop_closed');
   }
 
   return newUnlocks;

@@ -23,6 +23,10 @@ export interface DailyEntry {
   journal_text: string | null;      // Freies Journaling
   has_quickwin: boolean;
   quickwin_text: string | null;
+  // Sprint 2: Intention-Loop
+  morning_intention: string | null;
+  intention_result: 'done' | 'partial' | 'missed' | null;
+  intention_comment: string | null;
   created_at: string;
 }
 
@@ -59,6 +63,7 @@ export interface UserProfile {
   onboarding_goal: string | null;
   weekly_quickwin_target: number;
   onboarding_complete: boolean;
+  loop_closed_count: number; // Sprint 2
 }
 
 export interface UserAchievement {
@@ -77,7 +82,8 @@ export type AchievementId =
   | 'on_a_roll'
   | 'both_worlds'
   | 'deep_diver'
-  | 'goal_setter';
+  | 'goal_setter'
+  | 'loop_closed';
 
 export interface Achievement {
   id: AchievementId;

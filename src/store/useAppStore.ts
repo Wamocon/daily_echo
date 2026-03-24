@@ -34,6 +34,8 @@ interface AppState {
   clearNewlyUnlocked: () => void;
   saveOnboardingProfile: (data: OnboardingData) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
+  saveIntention: (intention: string) => void;
+  saveIntentionResult: (result: 'done' | 'partial' | 'missed', comment?: string) => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -170,5 +172,39 @@ export const useAppStore = create<AppState>((set, get) => ({
     const updated = { ...profile, ...updates };
     saveProfile(updated);
     set({ profile: updated });
+  },
+
+  saveIntention: (intention) => {
+    const { todayEntry } = get();
+    if (!todayEntry) return;
+    const updated: DailyEntry = { ...todayEntry, morning_intention: intention };
+    saveEntry(updated);
+    set({ todayEntry: updated });
+  },
+
+  saveIntentionResult: (result, comment = '') => {
+    const { todayEntry, profile, unlockedAchievements } = get();
+    if (!todayEntry) return;
+    const updated: DailyEntry = {
+      ...todayEntry,
+      intention_result: result,
+      intention_comment: comment || null,
+    };
+    saveEntry(updated);
+    // Increment loop_closed_count when a loop is actually completed (any result)
+    const updatedProfile: UserProfile = {
+      ...profile,
+      loop_closed_count: (profile.loop_closed_count ?? 0) + 1,
+    };
+    saveProfile(updatedProfile);
+    const newAchievements = checkAchievements(updatedProfile, updated, unlockedAchievements);
+    newAchievements.forEach((id) => unlockAchievement(id));
+    const allUnlocked = [...unlockedAchievements, ...newAchievements];
+    set({
+      todayEntry: updated,
+      profile: updatedProfile,
+      unlockedAchievements: allUnlocked,
+      newlyUnlocked: newAchievements,
+    });
   },
 }));

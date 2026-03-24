@@ -7,7 +7,7 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { MoodSuggestions } from '@/components/MoodSuggestions';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Flame, Plus, Heart, RefreshCw } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Flame, Plus, Heart, RefreshCw, Target, CheckCheck } from 'lucide-react';
 import { getCoreQuestions, pickRandomOptional, Question } from '@/lib/questions';
 
 interface CheckinFlowProps {
@@ -16,7 +16,8 @@ interface CheckinFlowProps {
 }
 
 type MoodDuration = 'just-today' | 'few-days' | 'a-while';
-type Step = 'mood' | 'mood-context' | 'questions' | 'perspective' | 'reframing' | 'quickwin' | 'done';
+type IntentionResult = 'done' | 'partial' | 'missed';
+type Step = 'mood' | 'mood-context' | 'intention' | 'questions' | 'intention-result' | 'perspective' | 'reframing' | 'quickwin' | 'done';
 
 export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [step, setStep] = useState<Step>('mood');
@@ -31,22 +32,52 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [moodDuration, setMoodDuration] = useState<MoodDuration | null>(null);
   const [perspectiveAnswer, setPerspectiveAnswer] = useState('');
   const [reframingAnswer, setReframingAnswer] = useState('');
+  const [intentionText, setIntentionText] = useState('');
+  const [intentionResult, setIntentionResult] = useState<IntentionResult | null>(null);
+  const [intentionComment, setIntentionComment] = useState('');
 
-  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile } = useAppStore();
+  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult } = useAppStore();
   const coreQuestions = getCoreQuestions(context);
   const allQuestions = [...coreQuestions, ...extraQuestions];
   const MAX_OPTIONAL = 2;
   const isLowMood = selectedMood !== null && selectedMood <= 2;
+  // Yesterday's intention for evening loop
+  const morningIntention = todayEntry?.morning_intention ?? null;
 
   const handleMoodNext = () => {
     if (!selectedMood) return;
     saveMood(selectedMood, context);
-    // Low mood → Kontext-Klärung zuerst
+    if (context === 'morning') {
+      // Morning: ask for intention first
+      setStep('intention');
+    } else if (isLowMood) {
+      setStep('mood-context');
+    } else {
+      // Evening: show intention-result if morning intention exists
+      if (morningIntention) {
+        setStep('intention-result');
+      } else {
+        setStep('questions');
+      }
+    }
+  };
+
+  const handleIntentionNext = () => {
+    if (intentionText.trim()) {
+      saveIntention(intentionText.trim());
+    }
     if (isLowMood) {
       setStep('mood-context');
     } else {
       setStep('questions');
     }
+  };
+
+  const handleIntentionResultNext = () => {
+    if (intentionResult) {
+      saveIntentionResult(intentionResult, intentionComment);
+    }
+    setStep('questions');
   };
 
   const handleMoodContextNext = () => {
@@ -149,6 +180,117 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             >
               Weiter <ChevronRight className="ml-1 w-4 h-4" />
             </Button>
+          </motion.div>
+        )}
+
+        {/* ── Intention (Morgen) ── */}
+        {step === 'intention' && (
+          <motion.div
+            key="intention"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0">
+                <Target className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold leading-tight">Deine Intention</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Was soll heute zählen?</p>
+              </div>
+            </div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Was soll heute dein wichtigster Moment sein?
+              Abends wirst du gefragt, ob du es erreicht hast.
+            </p>
+            <textarea
+              autoFocus
+              className="w-full rounded-xl border bg-card p-4 text-sm resize-none min-h-[100px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Heute will ich..."
+              value={intentionText}
+              onChange={(e) => setIntentionText(e.target.value)}
+            />
+            <Button onClick={handleIntentionNext} disabled={!intentionText.trim()} className="w-full">
+              Weiter <ChevronRight className="ml-1 w-4 h-4" />
+            </Button>
+            <button
+              onClick={() => handleIntentionNext()}
+              className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
+            >
+              Überspringen
+            </button>
+          </motion.div>
+        )}
+
+        {/* ── Intention-Result (Abend) ── */}
+        {step === 'intention-result' && morningIntention && (
+          <motion.div
+            key="intention-result"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+                <CheckCheck className="w-5 h-5 text-green-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold leading-tight">Dein Morgen-Vorsatz</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Wie ist es gelaufen?</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 p-4">
+              <p className="text-xs text-amber-700 dark:text-amber-300 font-medium mb-1">Heute Morgen wolltest du:</p>
+              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100">&ldquo;{morningIntention}&rdquo;</p>
+            </div>
+            <div className="flex flex-col gap-2">
+              {([
+                { value: 'done', label: '✅ Geschafft!', desc: 'Ich habe es erreicht', cls: 'border-green-400 bg-green-50 dark:bg-green-950' },
+                { value: 'partial', label: '🔄 Teilweise', desc: 'Ich war auf dem Weg', cls: 'border-amber-400 bg-amber-50 dark:bg-amber-950' },
+                { value: 'missed', label: '❌ Nicht geklappt', desc: 'Heute nicht — morgen wieder', cls: 'border-red-300 bg-red-50 dark:bg-red-950' },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setIntentionResult(opt.value)}
+                  className={`w-full rounded-xl border p-3.5 flex items-center gap-3 text-left transition-all ${
+                    intentionResult === opt.value
+                      ? `${opt.cls} ring-2 ring-offset-1 ring-primary/30`
+                      : 'bg-card border-border hover:border-primary/40'
+                  }`}
+                >
+                  <div>
+                    <p className="font-medium text-sm">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            {intentionResult && (
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }}>
+                <textarea
+                  className="w-full rounded-xl border bg-card p-3 text-sm resize-none min-h-[80px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  placeholder={
+                    intentionResult === 'done' ? 'Was hat geholfen?' :
+                    intentionResult === 'partial' ? 'Was hat dich gebremst?' :
+                    'Was ist dazwischen gekommen?'
+                  }
+                  value={intentionComment}
+                  onChange={(e) => setIntentionComment(e.target.value)}
+                />
+              </motion.div>
+            )}
+            <Button onClick={handleIntentionResultNext} disabled={!intentionResult} className="w-full">
+              Weiter <ChevronRight className="ml-1 w-4 h-4" />
+            </Button>
+            <button
+              onClick={() => setStep('questions')}
+              className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
+            >
+              Überspringen
+            </button>
           </motion.div>
         )}
 
