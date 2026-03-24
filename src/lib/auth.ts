@@ -6,6 +6,7 @@ export interface DemoAccount {
   id: string;
   name: string;
   role: UserRole;
+  email?: string;
   pin?: string;
   emoji: string;
   tagline: string;
@@ -75,13 +76,46 @@ export function loginUser(account: DemoAccount): AuthUser {
   return user;
 }
 
-export function registerUser(name: string): AuthUser {
+const REGISTERED_USERS_KEY = 'dailyecho_registered_users';
+
+interface StoredUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  created_at: string;
+}
+
+function getRegisteredUsers(): StoredUser[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(REGISTERED_USERS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function registerUser(name: string, email: string): AuthUser {
   const user: AuthUser = {
     id: `user-${Date.now()}`,
     name,
     role: 'user',
     created_at: new Date().toISOString(),
   };
+  // Store in registered list for future logins
+  const users = getRegisteredUsers();
+  users.push({ ...user, email: email.toLowerCase().trim() });
+  localStorage.setItem(REGISTERED_USERS_KEY, JSON.stringify(users));
+  localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+  return user;
+}
+
+export function loginByEmail(email: string): AuthUser | null {
+  const users = getRegisteredUsers();
+  const found = users.find((u) => u.email === email.toLowerCase().trim());
+  if (!found) return null;
+  const user: AuthUser = { id: found.id, name: found.name, role: found.role, created_at: found.created_at };
   localStorage.setItem(AUTH_KEY, JSON.stringify(user));
   return user;
 }

@@ -24,9 +24,9 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const user = registerUser(name.trim());
-    // Sync to auth store (mirrors the DemoAccount shape for login action)
-    login({ id: user.id, name: user.name, role: user.role, emoji: '🙋', tagline: '', permissions: ['check-in', 'history', 'achievements'] });
+    const user = registerUser(name.trim(), email.trim());
+    // Sync to auth store
+    login({ id: user.id, name: user.name, role: user.role, email: email.trim(), emoji: '🙋', tagline: '', permissions: ['check-in', 'history', 'achievements'] });
     router.push('/onboarding');
   };
 
