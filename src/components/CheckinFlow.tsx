@@ -7,7 +7,7 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { MoodSuggestions } from '@/components/MoodSuggestions';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Flame, Plus } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Flame, Plus, Heart, RefreshCw } from 'lucide-react';
 import { getCoreQuestions, pickRandomOptional, Question } from '@/lib/questions';
 
 interface CheckinFlowProps {
@@ -15,7 +15,8 @@ interface CheckinFlowProps {
   onComplete: () => void;
 }
 
-type Step = 'mood' | 'questions' | 'quickwin' | 'done';
+type MoodDuration = 'just-today' | 'few-days' | 'a-while';
+type Step = 'mood' | 'mood-context' | 'questions' | 'perspective' | 'reframing' | 'quickwin' | 'done';
 
 export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [step, setStep] = useState<Step>('mood');
@@ -27,16 +28,57 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [extraQuestions, setExtraQuestions] = useState<Question[]>([]);
   const [usedOptionalIds, setUsedOptionalIds] = useState<string[]>([]);
   const [usedPromptLibrary, setUsedPromptLibrary] = useState(false);
+  const [moodDuration, setMoodDuration] = useState<MoodDuration | null>(null);
+  const [perspectiveAnswer, setPerspectiveAnswer] = useState('');
+  const [reframingAnswer, setReframingAnswer] = useState('');
 
   const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile } = useAppStore();
   const coreQuestions = getCoreQuestions(context);
   const allQuestions = [...coreQuestions, ...extraQuestions];
   const MAX_OPTIONAL = 2;
+  const isLowMood = selectedMood !== null && selectedMood <= 2;
 
   const handleMoodNext = () => {
     if (!selectedMood) return;
     saveMood(selectedMood, context);
+    // Low mood → Kontext-Klärung zuerst
+    if (isLowMood) {
+      setStep('mood-context');
+    } else {
+      setStep('questions');
+    }
+  };
+
+  const handleMoodContextNext = () => {
     setStep('questions');
+  };
+
+  // Nach letzter Frage: low mood → Perspektivwechsel, sonst weiter
+  const proceedAfterQuestions = () => {
+    saveAnswers(answers, context);
+    if (isLowMood) {
+      setStep('perspective');
+    } else if (context === 'evening') {
+      setStep('quickwin');
+    } else {
+      completeCheckin(context, usedPromptLibrary);
+      setStep('done');
+      setTimeout(onComplete, 2500);
+    }
+  };
+
+  const handlePerspectiveNext = () => {
+    setStep('reframing');
+  };
+
+  const handleReframingNext = () => {
+    if (context === 'evening') {
+      setStep('quickwin');
+    } else {
+      completeCheckin(context, usedPromptLibrary);
+      setStep('done');
+      setTimeout(onComplete, 2500);
+    }
   };
 
   const handleAddOptionalQuestion = () => {
@@ -52,14 +94,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (currentQuestion < allQuestions.length - 1) {
       setCurrentQuestion((q) => q + 1);
     } else {
-      saveAnswers(answers, context);
-      if (context === 'evening') {
-        setStep('quickwin');
-      } else {
-        completeCheckin(context, usedPromptLibrary);
-        setStep('done');
-        setTimeout(onComplete, 2500);
-      }
+      proceedAfterQuestions();
     }
   };
 
@@ -67,14 +102,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (currentQuestion < allQuestions.length - 1) {
       setCurrentQuestion((q) => q + 1);
     } else {
-      saveAnswers(answers, context);
-      if (context === 'evening') {
-        setStep('quickwin');
-      } else {
-        completeCheckin(context, usedPromptLibrary);
-        setStep('done');
-        setTimeout(onComplete, 2500);
-      }
+      proceedAfterQuestions();
     }
   };
 
@@ -121,6 +149,177 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             >
               Weiter <ChevronRight className="ml-1 w-4 h-4" />
             </Button>
+          </motion.div>
+        )}
+
+        {/* ── Mood-Kontext (nur bei Mood ≤ 2) ── */}
+        {step === 'mood-context' && (
+          <motion.div
+            key="mood-context"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col gap-6"
+          >
+            <div className="text-center">
+              <h2 className="text-xl font-semibold">Danke, dass du ehrlich bist 🙏</h2>
+              <p className="text-sm text-muted-foreground mt-2">
+                Wie lange fühlst du dich schon so?
+              </p>
+            </div>
+            <div className="flex flex-col gap-3">
+              {([
+                { value: 'just-today', label: 'Nur heute', emoji: '🌥️', desc: 'Ein temporäres Gefühl' },
+                { value: 'few-days', label: 'Seit ein paar Tagen', emoji: '🌧️', desc: 'Schon eine Weile merkbar' },
+                { value: 'a-while', label: 'Schon länger', emoji: '⛈️', desc: 'Hält sich hartnäckig' },
+              ] as const).map((opt) => (
+                <button
+                  key={opt.value}
+                  onClick={() => setMoodDuration(opt.value)}
+                  className={`w-full rounded-xl border p-4 flex items-center gap-4 text-left transition-all ${
+                    moodDuration === opt.value
+                      ? 'border-primary bg-primary/5 ring-2 ring-primary/20'
+                      : 'bg-card border-border hover:border-primary/40'
+                  }`}
+                >
+                  <span className="text-2xl">{opt.emoji}</span>
+                  <div>
+                    <p className="font-medium text-sm">{opt.label}</p>
+                    <p className="text-xs text-muted-foreground">{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            {moodDuration === 'a-while' && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 text-sm text-blue-800 dark:text-blue-200"
+              >
+                💙 Wenn sich das schon länger so anfühlt — es kann helfen, mit jemandem zu sprechen.
+                DailyEcho begleitet dich, kann aber keine professionelle Unterstützung ersetzen.
+              </motion.div>
+            )}
+            <Button onClick={handleMoodContextNext} disabled={!moodDuration} className="w-full">
+              Weiter <ChevronRight className="ml-1 w-4 h-4" />
+            </Button>
+          </motion.div>
+        )}
+
+        {/* ── Perspektivwechsel (nur bei Mood ≤ 2, nach Fragen) ── */}
+        {step === 'perspective' && (
+          <motion.div
+            key="perspective"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-pink-100 dark:bg-pink-900/30 flex items-center justify-center shrink-0">
+                <Heart className="w-5 h-5 text-pink-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold leading-tight">Ein Perspektivwechsel</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Self-Compassion Übung</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-pink-50 dark:bg-pink-950 border border-pink-200 dark:border-pink-800 p-4">
+              <p className="text-sm leading-relaxed text-pink-900 dark:text-pink-100">
+                Stell dir vor, dein bester Freund hätte heute genau das erlebt, was du beschrieben hast.
+                <strong className="block mt-2">Was würdest du ihm sagen?</strong>
+              </p>
+            </div>
+            <textarea
+              className="w-full rounded-xl border bg-card p-4 text-sm resize-none min-h-[110px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Ich würde ihm sagen..."
+              value={perspectiveAnswer}
+              onChange={(e) => setPerspectiveAnswer(e.target.value)}
+            />
+            {perspectiveAnswer.trim().length > 10 && (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-xl bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-3 text-sm text-green-800 dark:text-green-200 text-center"
+              >
+                💚 Das gilt auch für dich.
+              </motion.div>
+            )}
+            <Button onClick={handlePerspectiveNext} disabled={!perspectiveAnswer.trim()} className="w-full">
+              Weiter <ChevronRight className="ml-1 w-4 h-4" />
+            </Button>
+            <button
+              onClick={handlePerspectiveNext}
+              className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
+            >
+              Überspringen
+            </button>
+          </motion.div>
+        )}
+
+        {/* ── Reframing (nach Perspektivwechsel) ── */}
+        {step === 'reframing' && (
+          <motion.div
+            key="reframing"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-violet-100 dark:bg-violet-900/30 flex items-center justify-center shrink-0">
+                <RefreshCw className="w-5 h-5 text-violet-500" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold leading-tight">Reframing</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">Andere Sichtweise einnehmen</p>
+              </div>
+            </div>
+            <div className="rounded-xl bg-violet-50 dark:bg-violet-950 border border-violet-200 dark:border-violet-800 p-4">
+              <p className="text-sm leading-relaxed text-violet-900 dark:text-violet-100">
+                Gibt es eine andere Sichtweise auf das, was du heute beschrieben hast?
+                <span className="block mt-1 text-xs opacity-70">
+                  Nicht &quot;positiv denken&quot; — sondern ehrlich: Welcher andere Blickwinkel wäre möglich?
+                </span>
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {[
+                'Das ist vorübergehend',
+                'Ich bin stärker als es sich anfühlt',
+                'Das lehrt mich etwas',
+                'Andere hatten das auch',
+                'Eigene Antwort…',
+              ].map((chip) => (
+                <button
+                  key={chip}
+                  onClick={() => setReframingAnswer(chip === 'Eigene Antwort…' ? '' : chip)}
+                  className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
+                    reframingAnswer === chip
+                      ? 'bg-violet-500 text-white border-violet-500'
+                      : 'bg-card border-border hover:border-violet-400'
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+            <textarea
+              className="w-full rounded-xl border bg-card p-4 text-sm resize-none min-h-[90px] focus:outline-none focus:ring-2 focus:ring-primary/50"
+              placeholder="Meine andere Sichtweise..."
+              value={reframingAnswer}
+              onChange={(e) => setReframingAnswer(e.target.value)}
+            />
+            <Button onClick={handleReframingNext} disabled={!reframingAnswer.trim()} className="w-full">
+              {context === 'evening' ? 'Weiter zum Quick Win' : 'Abschließen'}
+              <ChevronRight className="ml-1 w-4 h-4" />
+            </Button>
+            <button
+              onClick={handleReframingNext}
+              className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
+            >
+              Überspringen
+            </button>
           </motion.div>
         )}
 
