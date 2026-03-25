@@ -16,7 +16,6 @@ const NAV_GROUPS = [
     label: 'Täglich',
     items: [
       { name: 'Dashboard', url: '/home', icon: Home, permission: null },
-      { name: 'Quick Wins', url: '/quickwins', icon: Zap, permission: 'check-in' },
     ]
   },
   {

@@ -202,65 +202,15 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Inline Quick Win erfassen */}
-            <AnimatePresence mode="wait">
-              {qwExpanded ? (
-                <motion.div
-                  key="qw-input"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="flex gap-2"
-                >
-                  <input
-                    autoFocus
-                    value={qwInput}
-                    onChange={e => setQwInput(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && qwInput.trim()) {
-                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
-                        init();
-                        setQwInput('');
-                        setQwExpanded(false);
-                      }
-                      if (e.key === 'Escape') setQwExpanded(false);
-                    }}
-                    placeholder="Was hast du heute erreicht?"
-                    className="flex-1 text-xs bg-background border border-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                  <button
-                    onClick={() => {
-                      if (qwInput.trim()) {
-                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
-                        init();
-                        setQwInput('');
-                      }
-                      setQwExpanded(false);
-                    }}
-                    className="text-xs bg-primary text-primary-foreground px-3 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors"
-                  >
-                    ✓
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  key="qw-btn"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={() => setQwExpanded(true)}
-                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-amber-500 transition-colors group self-start"
-                >
-                  <Plus className="w-3.5 h-3.5 group-hover:scale-125 transition-transform" />
-                  Quick Win erfassen
-                </motion.button>
-              )}
-            </AnimatePresence>
+            {/* Inline Quick Win erfassen — jetzt in Rhythmus-Kachel */}
           </div>
         </div>
 
-        {/* --- 5. Status Kombi (Morgen & Abend) --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center">
-          <h3 className="text-xs font-semibold mb-4 text-muted-foreground uppercase tracking-widest pl-1">Dein Rhythmus</h3>
+        {/* --- 5. Rhythmus-Kachel: MorningEcho/NightEcho + Intention + Quick Win --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-5">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Rhythmus</h3>
+
+          {/* Check-in Buttons */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => !morningDone && router.push('/checkin?mode=morning')}
@@ -299,6 +249,84 @@ export default function DashboardPage() {
                 </p>
               </div>
             </button>
+          </div>
+
+          {/* Heute Intention (falls vorhanden) */}
+          {todayEntry?.morning_intention && (
+            <div className="rounded-2xl bg-primary/5 border border-primary/15 px-4 py-3 flex items-start gap-3">
+              <span className="text-base mt-0.5">🎯</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Deine heutige Intention</p>
+                <p className="text-sm text-foreground/90 line-clamp-2">{todayEntry.morning_intention}</p>
+              </div>
+              {!eveningDone && (
+                <button
+                  onClick={() => router.push('/checkin?mode=evening')}
+                  className="text-[10px] text-primary font-semibold whitespace-nowrap bg-primary/10 px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors shrink-0"
+                >
+                  Wie lief’s?
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Quick Win erfassen */}
+          <div className="border-t border-border/40 pt-4">
+            <AnimatePresence mode="wait">
+              {qwExpanded ? (
+                <motion.div
+                  key="qw-input"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex gap-2"
+                >
+                  <input
+                    autoFocus
+                    value={qwInput}
+                    onChange={e => setQwInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && qwInput.trim()) {
+                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                        init();
+                        setQwInput('');
+                        setQwExpanded(false);
+                      }
+                      if (e.key === 'Escape') setQwExpanded(false);
+                    }}
+                    placeholder="Was hast du heute erreicht?"
+                    className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <button
+                    onClick={() => {
+                      if (qwInput.trim()) {
+                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                        init();
+                        setQwInput('');
+                      }
+                      setQwExpanded(false);
+                    }}
+                    className="text-sm bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    ✓
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="qw-btn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={() => setQwExpanded(true)}
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-amber-500 transition-colors group"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
+                    <Plus className="w-4 h-4 text-amber-500" />
+                  </div>
+                  <span className="font-medium">⚡ Quick Win erfassen</span>
+                  <span className="text-xs text-muted-foreground/60 ml-1">Was hast du heute erreicht?</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
