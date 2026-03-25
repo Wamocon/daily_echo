@@ -200,22 +200,15 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <AnimatePresence initial={false}>
-            {sidebarOpen && (
-              <motion.aside
-                key="sidebar"
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: 320 }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-                className="overflow-hidden"
-              >
-                <div className="w-80 bg-muted/60 dark:bg-muted/30 rounded-[2rem] border-2 border-border/60 shadow-sm p-5">
-                  <QuickActionsSidebar />
-                </div>
-              </motion.aside>
-            )}
-          </AnimatePresence>
+          <motion.aside
+            animate={{ width: sidebarOpen ? 320 : 0, opacity: sidebarOpen ? 1 : 0 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+            className="overflow-hidden flex-shrink-0"
+          >
+            <div className="w-80 bg-muted/60 dark:bg-muted/30 rounded-[2rem] border-2 border-border/60 shadow-sm p-5">
+              <QuickActionsSidebar />
+            </div>
+          </motion.aside>
         </div>
 
         {/* Mobile FAB */}
@@ -231,50 +224,46 @@ export default function DashboardPage() {
         </button>
 
         {/* Mobile Bottom Sheet */}
+        {/* Backdrop — conditional is fine, holds no widget state */}
         <AnimatePresence>
           {sheetOpen && (
-            <>
-              {/* Backdrop */}
-              <motion.div
-                key="backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-                onClick={() => setSheetOpen(false)}
-              />
-              {/* Sheet */}
-              <motion.div
-                key="sheet"
-                initial={{ y: '100%' }}
-                animate={{ y: 0 }}
-                exit={{ y: '100%' }}
-                transition={{ type: 'spring', stiffness: 320, damping: 38 }}
-                className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-[2rem] shadow-2xl max-h-[80vh] overflow-y-auto pb-safe"
-              >
-                {/* Handle */}
-                <div className="flex justify-center pt-3 pb-1">
-                  <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
-                </div>
-                {/* Header */}
-                <div className="flex items-center justify-between px-6 py-3 border-b border-border/40">
-                  <span className="font-bold text-base">Für dich</span>
-                  <button
-                    onClick={() => setSheetOpen(false)}
-                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-accent transition-colors"
-                  >
-                    <X className="w-4 h-4 text-muted-foreground" />
-                  </button>
-                </div>
-                {/* Content */}
-                <div className="px-5 pt-4 pb-10">
-                  <QuickActionsSidebar />
-                </div>
-              </motion.div>
-            </>
+            <motion.div
+              key="backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="lg:hidden fixed inset-0 z-[55] bg-black/40 backdrop-blur-sm"
+              onClick={() => setSheetOpen(false)}
+            />
           )}
         </AnimatePresence>
+        {/* Sheet — always mounted so timer/video state is preserved */}
+        <motion.div
+          initial={{ y: '100%' }}
+          animate={{ y: sheetOpen ? 0 : '100%' }}
+          transition={{ type: 'spring', stiffness: 320, damping: 38 }}
+          className="lg:hidden fixed bottom-0 left-0 right-0 z-[60] bg-background rounded-t-[2rem] shadow-2xl max-h-[90vh] overflow-y-auto"
+        >
+          {/* Handle */}
+          <div className="flex justify-center pt-3 pb-1">
+            <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+          </div>
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-border/40">
+            <span className="font-bold text-base">Für dich</span>
+            <button
+              onClick={() => setSheetOpen(false)}
+              className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-accent transition-colors"
+            >
+              <X className="w-4 h-4 text-muted-foreground" />
+            </button>
+          </div>
+          {/* Content */}
+          <div className="px-5 pt-4 pb-10">
+            <QuickActionsSidebar />
+          </div>
+        </motion.div>
 
       </div>
     </div>

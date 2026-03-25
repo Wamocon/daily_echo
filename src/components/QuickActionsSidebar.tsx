@@ -10,13 +10,16 @@ import { cn } from '@/lib/utils';
 // ─────────────────────────────────────────────
 // POMODORO WIDGET
 // ─────────────────────────────────────────────
-function PomodoroWidget({ onClose }: { onClose: () => void }) {
+function PomodoroWidget({ onClose, isRunning, setIsRunning }: {
+  onClose: () => void;
+  isRunning: boolean;
+  setIsRunning: (v: boolean) => void;
+}) {
   const WORK_SECS = 25 * 60;
   const BREAK_SECS = 5 * 60;
 
   const [phase, setPhase] = useState<'work' | 'break'>('work');
   const [timeLeft, setTimeLeft] = useState(WORK_SECS);
-  const [isRunning, setIsRunning] = useState(false);
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
@@ -85,7 +88,7 @@ function PomodoroWidget({ onClose }: { onClose: () => void }) {
 
       <div className="flex gap-2">
         <button
-          onClick={() => setIsRunning(r => !r)}
+          onClick={() => setIsRunning(!isRunning)}
           className={cn(
             'flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all',
             isRunning ? 'bg-muted text-foreground hover:bg-muted/80' : 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm'
@@ -107,8 +110,11 @@ function PomodoroWidget({ onClose }: { onClose: () => void }) {
 // ─────────────────────────────────────────────
 const BREATH_PHASES = ['Einatmen', 'Halten', 'Ausatmen', 'Halten'];
 
-function BreathingWidget({ onClose }: { onClose: () => void }) {
-  const [isRunning, setIsRunning] = useState(false);
+function BreathingWidget({ onClose, isRunning, setIsRunning }: {
+  onClose: () => void;
+  isRunning: boolean;
+  setIsRunning: (v: boolean) => void;
+}) {
   const [phaseIdx, setPhaseIdx] = useState(0);
   const [countdown, setCountdown] = useState(4);
 
@@ -231,28 +237,44 @@ type SuggestionCardProps = {
   desc: string;
   cta: string;
   external?: boolean;
+  isActive?: boolean;
+  activeLabel?: string;
+  activeDotColor?: string;
+  activeBorderColor?: string;
   onClick: () => void;
 };
 
-function SuggestionCard({ icon: Icon, iconBg, title, desc, cta, external, onClick }: SuggestionCardProps) {
+function SuggestionCard({ icon: Icon, iconBg, title, desc, cta, external, isActive, activeLabel, activeDotColor = 'bg-green-500', activeBorderColor = 'border-green-400/50', onClick }: SuggestionCardProps) {
   return (
     <button
       onClick={onClick}
-      className="group w-full bg-card rounded-3xl border border-border/40 p-4 shadow-sm hover:border-primary/30 hover:shadow-md transition-all text-left flex items-center gap-4"
+      className={cn(
+        'group w-full bg-card rounded-3xl border p-4 shadow-sm hover:shadow-md transition-all text-left flex items-center gap-4',
+        isActive
+          ? `${activeBorderColor} ring-1 ring-inset ring-green-400/20`
+          : 'border-border/40 hover:border-primary/30',
+      )}
     >
-      <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform', iconBg)}>
+      <div className={cn('w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform relative', iconBg)}>
         <Icon className="w-5 h-5" />
+        {isActive && (
+          <span className={cn('absolute -top-1 -right-1 w-3 h-3 rounded-full border-2 border-background animate-pulse', activeDotColor)} />
+        )}
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold leading-tight">{title}</p>
         <p className="text-xs text-muted-foreground mt-0.5">{desc}</p>
       </div>
-      <div className={cn(
-        'flex items-center gap-0.5 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0',
-      )}>
-        {external && <ExternalLink className="w-3 h-3" />}
-        <span>{cta}</span>
-      </div>
+      {isActive && activeLabel ? (
+        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-green-100 dark:bg-green-950 text-green-700 dark:text-green-400 shrink-0">
+          {activeLabel}
+        </span>
+      ) : (
+        <div className="flex items-center gap-0.5 text-xs font-semibold text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+          {external && <ExternalLink className="w-3 h-3" />}
+          <span>{cta}</span>
+        </div>
+      )}
     </button>
   );
 }
@@ -266,6 +288,9 @@ export function QuickActionsSidebar() {
   const { todayEntry, markInterventionDone } = useAppStore();
   const [activeWidget, setActiveWidget] = useState<WidgetId>(null);
   const [mounted, setMounted] = useState(false);
+  // Lifted running states — persist when widget is hidden
+  const [pomodoroRunning, setPomodoroRunning] = useState(false);
+  const [breatheRunning, setBreatheRunning] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -281,20 +306,27 @@ export function QuickActionsSidebar() {
 
   return (
     <div className="flex flex-col gap-4">
+      {/* Widgets — always mounted so timers/video survive panel close */}
+      <div className={activeWidget === 'pomodoro' ? '' : 'hidden'}>
+        <PomodoroWidget
+          onClose={() => setActiveWidget(null)}
+          isRunning={pomodoroRunning}
+          setIsRunning={setPomodoroRunning}
+        />
+      </div>
+      <div className={activeWidget === 'breathe' ? '' : 'hidden'}>
+        <BreathingWidget
+          onClose={() => setActiveWidget(null)}
+          isRunning={breatheRunning}
+          setIsRunning={setBreatheRunning}
+        />
+      </div>
+      <div className={activeWidget === 'lofi' ? '' : 'hidden'}>
+        <LofiWidget onClose={() => setActiveWidget(null)} />
+      </div>
 
+      {/* Suggestion list — shown when no widget is expanded */}
       <AnimatePresence mode="wait">
-        {/* Active widget takeover */}
-        {activeWidget === 'pomodoro' && (
-          <PomodoroWidget key="pomodoro" onClose={() => setActiveWidget(null)} />
-        )}
-        {activeWidget === 'breathe' && (
-          <BreathingWidget key="breathe" onClose={() => setActiveWidget(null)} />
-        )}
-
-        {activeWidget === 'lofi' && (
-          <LofiWidget key="lofi" onClose={() => setActiveWidget(null)} />
-        )}
-
         {!activeWidget && (
           <motion.div
             key="list"
@@ -331,27 +363,35 @@ export function QuickActionsSidebar() {
               </motion.div>
             )}
 
-            {/* Pomodoro — öffnet Timer im Widget */}
+            {/* Pomodoro */}
             <SuggestionCard
               icon={Timer}
               iconBg="bg-blue-100 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
               title="Fokus-Timer"
               desc="25 Min. Pomodoro · 5 Min. Pause"
               cta="Timer starten"
+              isActive={pomodoroRunning}
+              activeLabel="läuft"
+              activeDotColor="bg-blue-500"
+              activeBorderColor="border-blue-400/50"
               onClick={() => setActiveWidget('pomodoro')}
             />
 
-            {/* Atemübung — öffnet interaktive Übung */}
+            {/* Atemübung */}
             <SuggestionCard
               icon={Wind}
               iconBg="bg-teal-100 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400"
               title="Atemübung"
               desc="Box-Atmung · 4 Sekunden Rhythmus"
               cta="Starten"
+              isActive={breatheRunning}
+              activeLabel="aktiv"
+              activeDotColor="bg-teal-500"
+              activeBorderColor="border-teal-400/50"
               onClick={() => setActiveWidget('breathe')}
             />
 
-            {/* Lo-Fi — öffnet YouTube-Embed */}
+            {/* Lo-Fi */}
             <SuggestionCard
               icon={Music}
               iconBg="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400"
