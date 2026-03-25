@@ -174,9 +174,9 @@ src/
 - [x] Globaler "Top-Level" Kontext/Header (Header-Leiste für Titel & Kontext einfügen)
 
 ### Phase 2 � Dashboard Redesign (Das Raster) [Branch: design/bento-dashboard]
-- [ ] Organische Cards (Card UI statt aktueller Listen, weichere Schatten, mehr Whitespace)
-- [ ] Bento-Grid Dashboard-Struktur (CSS Grid Implementierung f�r das Main-Dashboard)
-- [ ] Prominenter Call-to-Action (CTA) Block f�r den Check-in direkt im Grid
+- [x] Organische Cards (Card UI statt aktueller Listen, weichere Schatten, mehr Whitespace)
+- [x] Bento-Grid Dashboard-Struktur (CSS Grid Implementierung für das Main-Dashboard)
+- [x] Prominenter Call-to-Action (CTA) Block für den Check-in direkt im Grid
 
 ### Phase 3 � Quick Actions (Der Kontext) [Branch: design/right-sidebar]
 - [ ] Rechte Sidebar / Sliding-Panel f�r schnelle Interaktionen (Quick Wins, �bungen)
