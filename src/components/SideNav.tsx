@@ -1,12 +1,13 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, PenLine, Trophy, BookOpen, ShieldCheck, LogOut, User, Moon, Sun, CalendarDays, Zap, Bell, Star } from 'lucide-react';
+import { Home, PenLine, Trophy, BookOpen, ShieldCheck, LogOut, User, CalendarDays, Zap, Bell, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useAppStore } from '@/store/useAppStore';
 import { calculateLevel, getLevelTitle, getLevelProgress } from '@/lib/xp';
+import { ACHIEVEMENTS } from '@/lib/achievements';
 import { ROLE_LABELS, ROLE_COLORS, canAccess } from '@/lib/auth';
 import { ThemeSwitch } from '@/components/ThemeSwitch';
 
@@ -39,13 +40,26 @@ export function SideNav() {
   const pathname = usePathname();
   const router = useRouter();
   const { currentUser, logout } = useAuthStore();
-  const { profile } = useAppStore();
+  const { profile, unlockedAchievements } = useAppStore();
 
   if (!currentUser || !profile) return null;
 
   const currentLevel = calculateLevel(profile.xp || 0);
   const currentTitle = getLevelTitle(currentLevel);
   const progressPercent = getLevelProgress(profile.xp || 0);
+
+  // Last 3 unlocked achievements as emoji
+  const recentAchievements = ACHIEVEMENTS
+    .filter(a => unlockedAchievements.includes(a.id as never))
+    .slice(-3);
+
+  // Name initials for avatar
+  const initials = (currentUser.name || '?')
+    .split(' ')
+    .map((w: string) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase();
 
   const handleLogout = () => {
     logout();
@@ -113,31 +127,60 @@ export function SideNav() {
 
       {/* User info + Logout */}
       <div className="px-3 py-4 border-t border-border space-y-2">
-        {/* User card */}
-        <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-accent/50">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shrink-0 shadow-sm">
-            <User className="w-4 h-4 text-white" />
-          </div>
-          <div className="flex-1 min-w-0 flex flex-col justify-center">
-            <div className="flex items-center justify-between gap-1">
-              <p className="text-sm font-semibold truncate leading-none">{currentUser.name}</p>
-              <span className="text-[10px] whitespace-nowrap text-purple-600 dark:text-purple-400 font-bold">
-                Lv. {currentLevel}
-              </span>
+        {/* User card — expanded */}
+        <div className="px-3 py-3 rounded-2xl bg-accent/50 flex flex-col gap-3">
+          {/* Avatar + name row */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shrink-0 shadow-md text-white font-bold text-sm">
+              {initials}
             </div>
-            
-            <p className="text-[10px] text-muted-foreground truncate leading-snug mt-0.5 mb-1.5">
-              {currentTitle}
-            </p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold truncate leading-tight">{currentUser.name}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded-full whitespace-nowrap">
+                  Lv. {currentLevel}
+                </span>
+                <span className="text-[10px] text-muted-foreground truncate">{currentTitle}</span>
+              </div>
+            </div>
+          </div>
 
-            <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
+          {/* XP Progress bar */}
+          <div className="w-full">
+            <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
+              <span>{profile.xp ?? 0} XP</span>
+              <span>Nächstes Level</span>
+            </div>
+            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${progressPercent}%` }}
-                className="h-full bg-purple-500 rounded-full"
+                transition={{ duration: 0.8, ease: 'easeOut' }}
+                className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
               />
             </div>
           </div>
+
+          {/* Recent achievements */}
+          {recentAchievements.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">Erfolge:</span>
+              <div className="flex gap-1">
+                {recentAchievements.map(a => (
+                  <span
+                    key={a.id}
+                    title={a.label}
+                    className="text-base leading-none"
+                  >
+                    {a.emoji}
+                  </span>
+                ))}
+              </div>
+              {unlockedAchievements.length > 3 && (
+                <span className="text-[10px] text-muted-foreground ml-auto">+{unlockedAchievements.length - 3} mehr</span>
+              )}
+            </div>
+          )}
         </div>
 
         <motion.button

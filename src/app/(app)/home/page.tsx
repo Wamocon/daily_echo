@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { StreakDisplay } from '@/components/StreakDisplay';
-import { WeeklyGoalRing } from '@/components/WeeklyGoalRing';
 import XPBar from '@/components/XPBar';
 import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
@@ -110,24 +109,82 @@ export default function DashboardPage() {
           <StreakDisplay />
         </div>
 
-        {/* --- 3. Wochenziel --- */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-2 bg-card rounded-[2rem] py-6 px-4 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
-          <div className="scale-90 origin-center">
-            <WeeklyGoalRing />
-          </div>
-        </div>
+        {/* --- 3+4. Fortschritt (kombiniert: XP + Tages-Goals) --- */}
+        <div className="col-span-1 md:col-span-6 lg:col-span-5 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-4 hover:border-primary/20 transition-all">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Fortschritt</h3>
 
-        {/* --- 4. Level & XP --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center hover:border-primary/20 transition-all">
-          <h3 className="text-sm font-semibold mb-3">Dein Fortschritt</h3>
+          {/* XP Bar */}
           <div className="bg-accent/30 rounded-2xl p-4">
             <XPBar xp={profile.xp ?? 0} level={profile.level ?? 1} />
+          </div>
+
+          {/* Daily goal rows */}
+          <div className="flex flex-col gap-2">
+            {/* Morgen Check-in */}
+            <div className="flex items-center gap-3">
+              <Sun className={`w-4 h-4 shrink-0 ${morningDone ? 'text-green-500' : 'text-muted-foreground/50'}`} />
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className={`h-full rounded-full transition-all ${morningDone ? 'bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.7)]' : 'bg-muted-foreground/20'}`}
+                  animate={{ width: morningDone ? '100%' : '0%' }}
+                  transition={{ duration: 0.6, ease: 'easeOut' }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground w-16 text-right">Morgen</span>
+              {morningDone && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded-full"
+                >
+                  +{20}
+                </motion.span>
+              )}
+            </div>
+
+            {/* Abend Check-in */}
+            <div className="flex items-center gap-3">
+              <Moon className={`w-4 h-4 shrink-0 ${eveningDone ? 'text-indigo-400' : 'text-muted-foreground/50'}`} />
+              <div className="flex-1 h-2 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  className={`h-full rounded-full transition-all ${eveningDone ? 'bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.7)]' : 'bg-muted-foreground/20'}`}
+                  animate={{ width: eveningDone ? '100%' : '0%' }}
+                  transition={{ duration: 0.6, ease: 'easeOut', delay: 0.1 }}
+                />
+              </div>
+              <span className="text-xs text-muted-foreground w-16 text-right">Abend</span>
+              {eveningDone && (
+                <motion.span
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-1.5 py-0.5 rounded-full"
+                >
+                  +{20}
+                </motion.span>
+              )}
+            </div>
+
+            {/* Bonus: Beide am selben Tag */}
+            {allDone && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center gap-3"
+              >
+                <span className="text-sm">☯️</span>
+                <div className="flex-1 h-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.6)]" />
+                <span className="text-xs text-muted-foreground w-16 text-right">Bonus</span>
+                <span className="text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded-full">
+                  +{15}
+                </span>
+              </motion.div>
+            )}
           </div>
         </div>
 
         {/* --- 5. Status Kombi (Morgen & Abend) --- */}
         <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center">
-          <h3 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-widest pl-1">Dein Rhythmus</h3>
+          <h3 className="text-xs font-semibold mb-4 text-muted-foreground uppercase tracking-widest pl-1">Dein Rhythmus</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <button
               onClick={() => !morningDone && router.push('/checkin?mode=morning')}
