@@ -8,6 +8,7 @@ import {
 } from '@/lib/storage';
 import { calculateStreak, todayISO } from '@/lib/streaks';
 import { checkAchievements } from '@/lib/achievements';
+import { XP, calculateLevel } from '@/lib/xp';
 
 interface OnboardingData {
   name: string;
@@ -24,18 +25,21 @@ interface AppState {
   newlyUnlocked: AchievementId[];
   weeklyGoal: WeeklyGoal;
   isInitialized: boolean;
+  xpGained: number;
+  leveledUp: number | null;
 
   init: () => void;
   saveMood: (mood: Mood, context: CheckinContext) => void;
   saveAnswers: (answers: string[], context: CheckinContext) => void;
   saveQuickWin: (text: string) => void;
-  completeCheckin: (context: CheckinContext, usedPromptLibrary?: boolean) => void;
+  completeCheckin: (context: CheckinContext, usedPromptLibrary?: boolean, perspectiveCompleted?: boolean) => void;
   useStreakFreeze: () => void;
   clearNewlyUnlocked: () => void;
   saveOnboardingProfile: (data: OnboardingData) => void;
   updateProfile: (updates: Partial<UserProfile>) => void;
   saveIntention: (intention: string) => void;
   saveIntentionResult: (result: 'done' | 'partial' | 'missed', comment?: string) => void;
+  clearXPFeedback: () => void;
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -45,6 +49,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   newlyUnlocked: [],
   weeklyGoal: { checkins: 0, checkinGoal: 5, quickwins: 0, quickwinGoal: 2 },
   isInitialized: false,
+  xpGained: 0,
+  leveledUp: null,
 
   init: () => {
     const profile = getProfile();
@@ -86,13 +92,19 @@ export const useAppStore = create<AppState>((set, get) => ({
     const isNew = !todayEntry.has_quickwin;
     const updated: DailyEntry = { ...todayEntry, has_quickwin: true, quickwin_text: text };
     saveEntry(updated);
-    const updatedProfile = isNew
+    let updatedProfile = isNew
       ? { ...profile, total_quickwins: profile.total_quickwins + 1 }
       : profile;
+    const { updatedProfile: profileWithXP, xpGained, leveledUp } = isNew
+      ? applyXP(updatedProfile, XP.QUICK_WIN)
+      : { updatedProfile, xpGained: 0, leveledUp: null };
+    updatedProfile = profileWithXP;
     saveProfile(updatedProfile);
     set({
       todayEntry: updated,
       profile: updatedProfile,
+      xpGained,
+      leveledUp,
       weeklyGoal: {
         ...get().weeklyGoal,
         quickwins: getWeeklyQuickWins(),
@@ -100,7 +112,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     });
   },
 
-  completeCheckin: (context, usedPromptLibrary = false) => {
+  completeCheckin: (context, usedPromptLibrary = false, perspectiveCompleted = false) => {
     const { todayEntry, profile, unlockedAchievements } = get();
     if (!todayEntry) return;
 
@@ -110,7 +122,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     saveEntry(updated);
 
     const { newStreak, shouldResetFreeze } = calculateStreak(profile);
-    const updatedProfile: UserProfile = {
+    let updatedProfile: UserProfile = {
       ...profile,
       streak: newStreak,
       longest_streak: Math.max(profile.longest_streak, newStreak),
@@ -118,6 +130,19 @@ export const useAppStore = create<AppState>((set, get) => ({
       total_checkins: profile.total_checkins + 1,
       freeze_used_this_week: shouldResetFreeze ? true : profile.freeze_used_this_week,
     };
+
+    // Award XP for check-in
+    let totalXP = context === 'morning' ? XP.MORNING_CHECKIN : XP.EVENING_CHECKIN;
+    if (perspectiveCompleted) totalXP += XP.PERSPECTIVE_STEP;
+    // Bonus for completing both morning + evening same day
+    const bothDone = context === 'evening' && updated.morning_done;
+    if (bothDone) totalXP += XP.BOTH_SAME_DAY_BONUS;
+    // Streak milestone bonus
+    const isStreakMilestone = [7, 14, 30, 100].includes(newStreak);
+    if (isStreakMilestone) totalXP += XP.STREAK_MILESTONE;
+
+    const { updatedProfile: profileWithXP, xpGained, leveledUp } = applyXP(updatedProfile, totalXP);
+    updatedProfile = profileWithXP;
     saveProfile(updatedProfile);
 
     const newAchievements = checkAchievements(updatedProfile, updated, unlockedAchievements, usedPromptLibrary);
@@ -130,6 +155,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       unlockedAchievements: allUnlocked,
       newlyUnlocked: newAchievements,
       weeklyGoal: { ...get().weeklyGoal, checkins: getWeeklyCheckins() },
+      xpGained,
+      leveledUp,
     });
   },
 
@@ -192,10 +219,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     };
     saveEntry(updated);
     // Increment loop_closed_count when a loop is actually completed (any result)
-    const updatedProfile: UserProfile = {
+    let updatedProfile: UserProfile = {
       ...profile,
       loop_closed_count: (profile.loop_closed_count ?? 0) + 1,
     };
+    const { updatedProfile: profileWithXP, xpGained, leveledUp } = applyXP(updatedProfile, XP.INTENTION_LOOP_CLOSED);
+    updatedProfile = profileWithXP;
     saveProfile(updatedProfile);
     const newAchievements = checkAchievements(updatedProfile, updated, unlockedAchievements);
     newAchievements.forEach((id) => unlockAchievement(id));
@@ -205,6 +234,27 @@ export const useAppStore = create<AppState>((set, get) => ({
       profile: updatedProfile,
       unlockedAchievements: allUnlocked,
       newlyUnlocked: newAchievements,
+      xpGained,
+      leveledUp,
     });
   },
+
+  clearXPFeedback: () => set({ xpGained: 0, leveledUp: null }),
 }));
+
+// ─── Internal helper ─────────────────────────────────────────────────────────
+
+function applyXP(
+  profile: UserProfile,
+  amount: number,
+): { updatedProfile: UserProfile; xpGained: number; leveledUp: number | null } {
+  const newXP = Math.max(0, (profile.xp ?? 0) + amount);
+  const oldLevel = profile.level ?? 1;
+  const newLevel = calculateLevel(newXP);
+  const leveledUp = newLevel > oldLevel ? newLevel : null;
+  return {
+    updatedProfile: { ...profile, xp: newXP, level: newLevel },
+    xpGained: amount > 0 ? amount : 0,
+    leveledUp,
+  };
+}

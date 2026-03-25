@@ -29,6 +29,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [extraQuestions, setExtraQuestions] = useState<Question[]>([]);
   const [usedOptionalIds, setUsedOptionalIds] = useState<string[]>([]);
   const [usedPromptLibrary, setUsedPromptLibrary] = useState(false);
+  const [perspectiveCompleted, setPerspectiveCompleted] = useState(false);
   const [moodDuration, setMoodDuration] = useState<MoodDuration | null>(null);
   const [perspectiveAnswer, setPerspectiveAnswer] = useState('');
   const [reframingAnswer, setReframingAnswer] = useState('');
@@ -36,7 +37,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [intentionResult, setIntentionResult] = useState<IntentionResult | null>(null);
   const [intentionComment, setIntentionComment] = useState('');
 
-  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult } = useAppStore();
+  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult, xpGained, clearXPFeedback } = useAppStore();
   const coreQuestions = getCoreQuestions(context);
   const allQuestions = [...coreQuestions, ...extraQuestions];
   const MAX_OPTIONAL = 2;
@@ -92,13 +93,14 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     } else if (context === 'evening') {
       setStep('quickwin');
     } else {
-      completeCheckin(context, usedPromptLibrary);
+      completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
       setStep('done');
       setTimeout(onComplete, 2500);
     }
   };
 
   const handlePerspectiveNext = () => {
+    setPerspectiveCompleted(true);
     setStep('reframing');
   };
 
@@ -106,7 +108,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (context === 'evening') {
       setStep('quickwin');
     } else {
-      completeCheckin(context, usedPromptLibrary);
+      completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
       setStep('done');
       setTimeout(onComplete, 2500);
     }
@@ -141,7 +143,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (hasQuickWin && quickWin.trim()) {
       saveQuickWin(quickWin.trim());
     }
-    completeCheckin(context, usedPromptLibrary);
+    completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
     setStep('done');
     setTimeout(onComplete, 2500);
   };
@@ -610,10 +612,23 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                   : 'Regelmäßige Reflexion macht einen echten Unterschied.'}
               </p>
             </div>
-            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-950 rounded-2xl px-5 py-3">
-              <Flame className="w-5 h-5 text-orange-500" />
-              <span className="font-bold text-lg">{profile.streak}</span>
-              <span className="text-sm text-muted-foreground">Tage Streak</span>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-950 rounded-2xl px-5 py-3">
+                <Flame className="w-5 h-5 text-orange-500" />
+                <span className="font-bold text-lg">{profile.streak}</span>
+                <span className="text-sm text-muted-foreground">Streak</span>
+              </div>
+              {xpGained > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.7, y: 10 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  transition={{ delay: 0.25, type: 'spring', stiffness: 350, damping: 18 }}
+                  className="flex items-center gap-2 bg-violet-50 dark:bg-violet-950 rounded-2xl px-5 py-3"
+                >
+                  <span className="text-violet-500 font-bold text-lg">+{xpGained}</span>
+                  <span className="text-sm text-muted-foreground">XP</span>
+                </motion.div>
+              )}
             </div>
             {selectedMood && (
               <motion.div
@@ -625,7 +640,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 <MoodSuggestions mood={selectedMood} context={context} />
               </motion.div>
             )}
-            <Button onClick={onComplete} className="w-full mt-2">
+            <Button onClick={() => { clearXPFeedback(); onComplete(); }} className="w-full mt-2">
               Fertig
             </Button>
           </motion.div>

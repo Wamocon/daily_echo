@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, PenLine, Trophy, BookOpen, ShieldCheck, LogOut, User, Moon, Sun, CalendarDays, Zap, Bell } from 'lucide-react';
+import { Home, PenLine, Trophy, BookOpen, ShieldCheck, LogOut, User, Moon, Sun, CalendarDays, Zap, Bell, Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { name: 'Kalender', url: '/calendar', icon: CalendarDays, permission: 'history' },
   { name: 'Quick Wins', url: '/quickwins', icon: Zap, permission: 'check-in' },
   { name: 'Erfolge', url: '/achievements', icon: Trophy, permission: 'achievements' },
+  { name: 'Freischaltungen', url: '/unlockables', icon: Star, permission: null },
   { name: 'Erinnerungen', url: '/notifications', icon: Bell, permission: 'check-in' },
   { name: 'Profil', url: '/profile', icon: User, permission: null },
   { name: 'Admin', url: '/admin', icon: ShieldCheck, permission: 'admin-panel' },

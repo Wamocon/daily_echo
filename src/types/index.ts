@@ -64,6 +64,9 @@ export interface UserProfile {
   weekly_quickwin_target: number;
   onboarding_complete: boolean;
   loop_closed_count: number; // Sprint 2
+  // Sprint 3: XP/Level
+  xp: number;
+  level: number;
 }
 
 export interface UserAchievement {
