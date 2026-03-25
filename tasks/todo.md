@@ -166,23 +166,23 @@ src/
 *(wird nach Fertigstellung befÃ¼llt)*
 
 
-## Redesign Phasen (Basierend auf UI Vorschlägen)
+## Redesign Phasen (Basierend auf UI Vorschlï¿½gen)
 
-### Phase 1 — Macro Layout (Die Struktur) [Branch: design/macro-layout]
-- [ ] Fluid Layout (Volle Breite mit Padding statt zentriertem Container)
-- [ ] Gruppierte und hierarchische Navigation (Sections in der SideNav aktualisieren)
-- [ ] Globaler "Top-Level" Kontext/Header (Header-Leiste für Titel & Kontext einfügen)
+### Phase 1 ï¿½ Macro Layout (Die Struktur) [Branch: design/macro-layout]
+- [x] Fluid Layout (Volle Breite mit Padding statt zentriertem Container)
+- [x] Gruppierte und hierarchische Navigation (Sections in der SideNav aktualisieren)
+- [x] Globaler "Top-Level" Kontext/Header (Header-Leiste fÃ¼r Titel & Kontext einfÃ¼gen)
 
-### Phase 2 — Dashboard Redesign (Das Raster) [Branch: design/bento-dashboard]
+### Phase 2 ï¿½ Dashboard Redesign (Das Raster) [Branch: design/bento-dashboard]
 - [ ] Organische Cards (Card UI statt aktueller Listen, weichere Schatten, mehr Whitespace)
-- [ ] Bento-Grid Dashboard-Struktur (CSS Grid Implementierung für das Main-Dashboard)
-- [ ] Prominenter Call-to-Action (CTA) Block für den Check-in direkt im Grid
+- [ ] Bento-Grid Dashboard-Struktur (CSS Grid Implementierung fï¿½r das Main-Dashboard)
+- [ ] Prominenter Call-to-Action (CTA) Block fï¿½r den Check-in direkt im Grid
 
-### Phase 3 — Quick Actions (Der Kontext) [Branch: design/right-sidebar]
-- [ ] Rechte Sidebar / Sliding-Panel für schnelle Interaktionen (Quick Wins, Übungen)
+### Phase 3 ï¿½ Quick Actions (Der Kontext) [Branch: design/right-sidebar]
+- [ ] Rechte Sidebar / Sliding-Panel fï¿½r schnelle Interaktionen (Quick Wins, ï¿½bungen)
 - [ ] Auslagerung der Interventionen aus dem Modal in diese Kontext-Spalte
 
-### Phase 4 — Visualizations & Emotion (Der Feinschliff) [Branch: design/data-viz-and-emotion]
+### Phase 4 ï¿½ Visualizations & Emotion (Der Feinschliff) [Branch: design/data-viz-and-emotion]
 - [ ] Inline-Visualisierungen / Daten aggregieren (Wochentrend-Diagramm ins Dashboard integrieren)
-- [ ] Emotionales Farbsystem für Faces anstatt Text/Zahlen (Mood-Gesichter re-designen)
-- [ ] Interactive Tooltips & Hover-States für Chart-Elemente und Moods hinzufügen
+- [ ] Emotionales Farbsystem fï¿½r Faces anstatt Text/Zahlen (Mood-Gesichter re-designen)
+- [ ] Interactive Tooltips & Hover-States fï¿½r Chart-Elemente und Moods hinzufï¿½gen
