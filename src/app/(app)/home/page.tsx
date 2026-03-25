@@ -8,18 +8,17 @@ import XPBar from '@/components/XPBar';
 import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { PenLine, Sun, Moon, Calendar, ChevronRight, CheckCircle2 } from 'lucide-react';
-import { getOnThisDay } from '@/lib/storage';
+import { PenLine, Sun, Moon, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { DailyEntry } from '@/types';
 import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
 import { DashboardMoodChart } from '@/components/DashboardMoodChart';
+import { DashboardCalendar } from '@/components/DashboardCalendar';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 
 export default function DashboardPage() {
   const { profile, todayEntry, isInitialized } = useAppStore();
   const router = useRouter();
-  const [onThisDay, setOnThisDay] = useState<DailyEntry[]>([]);
 
   const morningDone = todayEntry?.morning_done ?? false;
   const eveningDone = todayEntry?.evening_done ?? false;
@@ -33,10 +32,6 @@ export default function DashboardPage() {
   const nextCheckinLabel = primaryMode === 'morning'
     ? '🌅 Morgen-Check-in starten'
     : '🌙 Abend-Check-in starten';
-
-  useEffect(() => {
-    setOnThisDay(getOnThisDay());
-  }, []);
 
   if (!isInitialized) {
     return (
@@ -76,9 +71,9 @@ export default function DashboardPage() {
         <div className="col-span-1 md:col-span-12 lg:col-span-7 bg-card rounded-[2rem] p-6 lg:p-8 shadow-sm border border-border/40 flex flex-col justify-center relative overflow-hidden group hover:border-primary/20 transition-all">
           <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-500 pointer-events-none" />
           
-          <h2 className="text-xl font-bold mb-2 z-10">Dein Journal</h2>
+          <h2 className="text-xl font-bold mb-2 z-10">Tägliche Reflexion</h2>
           <p className="text-sm text-muted-foreground mb-6 z-10 max-w-sm">
-            Nimm dir einen kurzen Moment für dich. Reflektiere deinen Tag und lade neue Energie auf.
+            Nimm dir einen kurzen Moment für dich. Checke ein und sammle kleine Erfolge für deinen Tag.
           </p>
           
           <div className="z-10 mt-auto">
@@ -104,20 +99,27 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* --- 2. Streak & Wochenziel --- */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-5 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 flex flex-col justify-between hover:border-primary/20 transition-all">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <StreakDisplay />
-            <div className="shrink-0 scale-90 origin-top-right">
-              <WeeklyGoalRing />
-            </div>
+        {/* --- 2. Streak --- */}
+        <div className="col-span-1 md:col-span-6 lg:col-span-2 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
+          <StreakDisplay />
+        </div>
+
+        {/* --- 3. Wochenziel --- */}
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 bg-card rounded-[2rem] py-6 px-4 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
+          <div className="scale-90 origin-center">
+            <WeeklyGoalRing />
           </div>
-          <div className="bg-accent/30 rounded-2xl p-4 mt-auto">
+        </div>
+
+        {/* --- 4. Level & XP --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center hover:border-primary/20 transition-all">
+          <h3 className="text-sm font-semibold mb-3">Dein Fortschritt</h3>
+          <div className="bg-accent/30 rounded-2xl p-4">
             <XPBar xp={profile.xp ?? 0} level={profile.level ?? 1} />
           </div>
         </div>
 
-        {/* --- 3. Status Morgen --- */}
+        {/* --- 5. Status Morgen --- */}
         <button
           onClick={() => !morningDone && router.push('/checkin?mode=morning')}
           className={`col-span-1 md:col-span-6 lg:col-span-4 rounded-[2rem] p-6 shadow-sm border flex items-center gap-5 transition-all text-left group ${
@@ -157,44 +159,15 @@ export default function DashboardPage() {
           </div>
         </button>
 
-        {/* --- 5. Heute vor einem Jahr --- */}
-        {onThisDay.length > 0 ? (
-          <div className="col-span-1 md:col-span-6 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center">
-            <div className="flex items-center gap-2 text-xs font-semibold text-muted-foreground mb-3">
-              <Calendar className="w-4 h-4 text-primary" />
-              Heute vor einem Jahr
-            </div>
-            {onThisDay.slice(0, 1).map((e) => (
-              <div key={e.id} className="flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">
-                    {new Date(e.entry_date).toLocaleDateString('de-DE', { day: 'numeric', month: 'long', year: 'numeric' })}
-                  </span>
-                  <div className="flex gap-2 text-base bg-accent px-2 py-1 rounded-full">
-                    {e.morning_mood && <span>{MOOD_EMOJI[e.morning_mood]}</span>}
-                    {e.evening_mood && <span>{MOOD_EMOJI[e.evening_mood]}</span>}
-                  </div>
-                </div>
-                {e.quickwin_text && (
-                  <p className="text-sm text-muted-foreground bg-amber-500/10 text-amber-700 dark:text-amber-400 rounded-xl px-3 py-2 mt-1 font-medium">
-                    ⚡ {e.quickwin_text}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="col-span-1 md:col-span-6 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col items-center justify-center text-center opacity-70">
-            <Calendar className="w-8 h-8 text-muted-foreground/30 mb-2" />
-            <p className="text-sm font-medium text-muted-foreground">Kein Eintrag vom letzten Jahr</p>
-            <p className="text-xs text-muted-foreground/70 mt-1">Bleib dran, um deine Historie zu füllen!</p>
-          </div>
-        )}
+        {/* --- 5. Dashboard Calendar --- */}
+        <div className="col-span-1 md:col-span-6 lg:col-span-4 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center">
+          <DashboardCalendar />
+        </div>
 
-          {/* --- 6. NEU: Dashboard Chart Widget --- */}
-          <div className="col-span-1 md:col-span-12 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
-            <DashboardMoodChart />
-          </div>
+        {/* --- 6. Dashboard Chart Widget --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
+          <DashboardMoodChart />
+        </div>
 
         </div>
 

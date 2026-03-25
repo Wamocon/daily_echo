@@ -15,7 +15,6 @@ const NAV_GROUPS = [
     label: 'Täglich',
     items: [
       { name: 'Dashboard', url: '/home', icon: Home, permission: null },
-      { name: 'Check-in', url: '/checkin', icon: PenLine, permission: 'check-in' },
       { name: 'Quick Wins', url: '/quickwins', icon: Zap, permission: 'check-in' },
     ]
   },
@@ -23,9 +22,7 @@ const NAV_GROUPS = [
     label: 'Rückblick',
     items: [
       { name: 'Verlauf', url: '/history', icon: BookOpen, permission: 'history' },
-      { name: 'Kalender', url: '/calendar', icon: CalendarDays, permission: 'history' },
       { name: 'Erfolge', url: '/achievements', icon: Trophy, permission: 'achievements' },
-      { name: 'Freischaltungen', url: '/unlockables', icon: Star, permission: null },
     ]
   },
   {
