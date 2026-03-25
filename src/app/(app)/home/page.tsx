@@ -176,37 +176,42 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* --- RIGHT SIDEBAR (Quick Actions) collapsible --- */}
-        {/* Floating toggle tab (desktop only) */}
-        <button
-          onClick={() => setSidebarOpen(o => !o)}
-          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-30 flex-col items-center justify-center gap-1 bg-card border border-border/60 border-r-0 rounded-l-2xl px-2 py-4 shadow-md hover:bg-accent transition-all group"
-          title={sidebarOpen ? 'Panel schließen' : 'Panel öffnen'}
-        >
-          {sidebarOpen
-            ? <PanelRightClose className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-            : <PanelRightOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />}
-          <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest writing-mode-vertical" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
-            Für dich
-          </span>
-        </button>
+        {/* --- RIGHT SIDEBAR (collapsible, desktop only) --- */}
+        <div className="hidden lg:flex flex-col items-end shrink-0">
+          {/* Toggle header row */}
+          <div
+            className={`flex items-center gap-2 mb-3 cursor-pointer select-none group ${
+              sidebarOpen ? 'self-stretch justify-between' : 'justify-end'
+            }`}
+            onClick={() => setSidebarOpen(o => !o)}
+          >
+            {sidebarOpen && (
+              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-1">Für dich</span>
+            )}
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-card border border-border/40 shadow-sm group-hover:bg-accent group-hover:border-primary/30 transition-all">
+              {sidebarOpen
+                ? <PanelRightClose className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                : <PanelRightOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />}
+            </div>
+          </div>
 
-        <AnimatePresence initial={false}>
-          {sidebarOpen && (
-            <motion.aside
-              key="sidebar"
-              initial={{ opacity: 0, width: 0 }}
-              animate={{ opacity: 1, width: 320 }}
-              exit={{ opacity: 0, width: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-              className="shrink-0 overflow-hidden hidden lg:block"
-            >
-              <div className="w-80">
-                <QuickActionsSidebar />
-              </div>
-            </motion.aside>
-          )}
-        </AnimatePresence>
+          <AnimatePresence initial={false}>
+            {sidebarOpen && (
+              <motion.aside
+                key="sidebar"
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: 320 }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+                className="overflow-hidden"
+              >
+                <div className="w-80 bg-muted/40 dark:bg-muted/20 rounded-[2rem] border border-border/40 p-5">
+                  <QuickActionsSidebar />
+                </div>
+              </motion.aside>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Mobile: always shown, no toggle */}
         <aside className="w-full lg:hidden">

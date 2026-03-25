@@ -281,11 +281,6 @@ export function QuickActionsSidebar() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-1 flex items-center justify-between">
-        <span>Für dich</span>
-        {timeContext === 'morning' && <Sun className="w-4 h-4 text-yellow-500" />}
-        {timeContext === 'evening' && <Moon className="w-4 h-4 text-indigo-500" />}
-      </h3>
 
       <AnimatePresence mode="wait">
         {/* Active widget takeover */}
