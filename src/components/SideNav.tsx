@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { Home, PenLine, Trophy, BookOpen, ShieldCheck, LogOut, User, CalendarDays, Zap, Star } from 'lucide-react';
+import { Home, PenLine, Trophy, BookOpen, ShieldCheck, LogOut, User, CalendarDays, Zap, Star, HelpCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -29,6 +29,7 @@ const NAV_GROUPS = [
     label: 'Einstellungen',
     items: [
       { name: 'Profil', url: '/profile', icon: User, permission: null },
+      { name: 'Hilfe', url: '/help', icon: HelpCircle, permission: null },
       { name: 'Admin', url: '/admin', icon: ShieldCheck, permission: 'admin-panel' },
     ]
   }
