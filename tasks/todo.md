@@ -178,11 +178,13 @@ src/
 - [x] Bento-Grid Dashboard-Struktur (CSS Grid Implementierung für das Main-Dashboard)
 - [x] Prominenter Call-to-Action (CTA) Block für den Check-in direkt im Grid
 
-### Phase 3 � Quick Actions (Der Kontext) [Branch: design/right-sidebar]
-- [ ] Rechte Sidebar / Sliding-Panel f�r schnelle Interaktionen (Quick Wins, �bungen)
-- [ ] Auslagerung der Interventionen aus dem Modal in diese Kontext-Spalte
+### Phase 3 — Quick Actions (Der Kontext) [Branch: design/right-sidebar]
+- [x] Rechte Sidebar / Sliding-Panel für schnelle Interaktionen (Quick Wins, Übungen)
+- [x] Auslagerung der Interventionen aus dem Modal in diese Kontext-Spalte
 
 ### Phase 4 � Visualizations & Emotion (Der Feinschliff) [Branch: design/data-viz-and-emotion]
 - [ ] Inline-Visualisierungen / Daten aggregieren (Wochentrend-Diagramm ins Dashboard integrieren)
 - [ ] Emotionales Farbsystem f�r Faces anstatt Text/Zahlen (Mood-Gesichter re-designen)
 - [ ] Interactive Tooltips & Hover-States f�r Chart-Elemente und Moods hinzuf�gen
+
+Phase 3 starting - Right Sidebar & Micro Interventions
