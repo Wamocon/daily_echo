@@ -164,3 +164,25 @@ src/
 
 ## Review
 *(wird nach Fertigstellung befÃ¼llt)*
+
+
+## Redesign Phasen (Basierend auf UI Vorschlägen)
+
+### Phase 1 — Macro Layout (Die Struktur) [Branch: design/macro-layout]
+- [ ] Fluid Layout (Volle Breite mit Padding statt zentriertem Container)
+- [ ] Gruppierte und hierarchische Navigation (Sections in der SideNav aktualisieren)
+- [ ] Globaler "Top-Level" Kontext/Header (Header-Leiste für Titel & Kontext einfügen)
+
+### Phase 2 — Dashboard Redesign (Das Raster) [Branch: design/bento-dashboard]
+- [ ] Organische Cards (Card UI statt aktueller Listen, weichere Schatten, mehr Whitespace)
+- [ ] Bento-Grid Dashboard-Struktur (CSS Grid Implementierung für das Main-Dashboard)
+- [ ] Prominenter Call-to-Action (CTA) Block für den Check-in direkt im Grid
+
+### Phase 3 — Quick Actions (Der Kontext) [Branch: design/right-sidebar]
+- [ ] Rechte Sidebar / Sliding-Panel für schnelle Interaktionen (Quick Wins, Übungen)
+- [ ] Auslagerung der Interventionen aus dem Modal in diese Kontext-Spalte
+
+### Phase 4 — Visualizations & Emotion (Der Feinschliff) [Branch: design/data-viz-and-emotion]
+- [ ] Inline-Visualisierungen / Daten aggregieren (Wochentrend-Diagramm ins Dashboard integrieren)
+- [ ] Emotionales Farbsystem für Faces anstatt Text/Zahlen (Mood-Gesichter re-designen)
+- [ ] Interactive Tooltips & Hover-States für Chart-Elemente und Moods hinzufügen

@@ -21,7 +21,7 @@ export default function UnlockablesPage() {
   const categories = ['feature', 'cosmetic', 'theme'] as const;
 
   return (
-    <div className="min-h-screen">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="flex flex-col gap-6 px-4 pt-10 pb-32 lg:pb-10 w-full max-w-lg mx-auto">
 
         {/* Header */}

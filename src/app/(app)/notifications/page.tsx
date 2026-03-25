@@ -54,7 +54,7 @@ export default function NotificationsPage() {
   const notifSupported = typeof window !== 'undefined' && 'Notification' in window;
 
   return (
-    <div className="min-h-screen px-4 pt-8 pb-32 lg:pb-8 max-w-2xl mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="flex flex-col gap-6">
         {/* Header */}
         <div>
