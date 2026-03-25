@@ -1,5 +1,17 @@
 export type UserRole = 'admin' | 'user' | 'guest';
 
+export type UserValue =
+  | 'Familie'
+  | 'Karriere'
+  | 'Gesundheit'
+  | 'Kreativität'
+  | 'Freundschaft'
+  | 'Sinn'
+  | 'Wachstum'
+  | 'Ruhe'
+  | 'Abenteuer'
+  | 'Finanzen';
+
 export interface AuthUser {
   id: string;
   name: string;
@@ -69,6 +81,9 @@ export interface UserProfile {
   // Sprint 3: XP/Level
   xp: number;
   level: number;
+  // Sprint 5: Values Compass
+  values: UserValue[];
+  value_answer_counts: Partial<Record<UserValue, number>>;
 }
 
 export interface UserAchievement {

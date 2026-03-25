@@ -40,6 +40,8 @@ function defaultProfile(): UserProfile {
     loop_closed_count: 0,
     xp: 0,
     level: 1,
+    values: [],
+    value_answer_counts: {},
   };
 }
 

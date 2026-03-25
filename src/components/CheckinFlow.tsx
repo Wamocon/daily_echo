@@ -8,7 +8,7 @@ import { MoodSuggestions } from '@/components/MoodSuggestions';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronRight, CheckCircle2, Flame, Plus, Heart, RefreshCw, Target, CheckCheck, Sparkles } from 'lucide-react';
-import { getCoreQuestions, pickRandomOptional, Question } from '@/lib/questions';
+import { getCoreQuestions, pickRandomOptional, getQuestionsForUser, Question } from '@/lib/questions';
 import { getIntervention, InterventionCard } from '@/lib/interventions';
 
 interface CheckinFlowProps {
@@ -38,9 +38,10 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [intentionResult, setIntentionResult] = useState<IntentionResult | null>(null);
   const [intentionComment, setIntentionComment] = useState('');
 
-  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult, xpGained, clearXPFeedback, markInterventionDone } = useAppStore();
+  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult, xpGained, clearXPFeedback, markInterventionDone, incrementValueAnswer } = useAppStore();
   const coreQuestions = getCoreQuestions(context);
-  const allQuestions = [...coreQuestions, ...extraQuestions];
+  const valueQuestions = getQuestionsForUser(context, profile.values ?? []);
+  const allQuestions = [...valueQuestions, ...extraQuestions];
   const MAX_OPTIONAL = 2;
   const isLowMood = selectedMood !== null && selectedMood <= 2;
   // Yesterday's intention for evening loop
@@ -97,6 +98,12 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   // Nach letzter Frage: low mood → Perspektivwechsel, sonst weiter
   const proceedAfterQuestions = () => {
     saveAnswers(answers, context);
+    // Track if a values-question was answered
+    allQuestions.forEach((q, i) => {
+      if (q.value && answers[i]?.trim()) {
+        incrementValueAnswer(q.value);
+      }
+    });
     if (isLowMood) {
       setStep('perspective');
     } else if (context === 'evening') {

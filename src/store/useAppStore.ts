@@ -1,7 +1,7 @@
 'use client';
 
 import { create } from 'zustand';
-import { UserProfile, DailyEntry, AchievementId, Mood, CheckinContext, WeeklyGoal } from '@/types';
+import { UserProfile, DailyEntry, AchievementId, Mood, CheckinContext, WeeklyGoal, UserValue } from '@/types';
 import {
   getProfile, saveProfile, getEntryByDate, saveEntry, createEmptyEntry,
   getUnlockedIds, unlockAchievement, getWeeklyCheckins, getWeeklyQuickWins,
@@ -16,6 +16,7 @@ interface OnboardingData {
   job: string;
   goal: string;
   weeklyQuickWinTarget: number;
+  values: UserValue[];
 }
 
 interface AppState {
@@ -40,6 +41,7 @@ interface AppState {
   saveIntention: (intention: string) => void;
   saveIntentionResult: (result: 'done' | 'partial' | 'missed', comment?: string) => void;
   markInterventionDone: () => void;
+  incrementValueAnswer: (value: UserValue) => void;
   clearXPFeedback: () => void;
 }
 
@@ -182,6 +184,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       weekly_quickwin_target: data.weeklyQuickWinTarget,
       display_name: data.name,
       onboarding_complete: true,
+      values: data.values,
+      value_answer_counts: {},
     };
     saveProfile(updated);
     const newAchievements = checkAchievements(updated, get().todayEntry!, unlockedAchievements, false);
@@ -250,6 +254,15 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { updatedProfile, xpGained, leveledUp } = applyXP(profile, XP.INTERVENTION_DONE);
     saveProfile(updatedProfile);
     set({ todayEntry: updated, profile: updatedProfile, xpGained, leveledUp });
+  },
+
+  incrementValueAnswer: (value) => {
+    const { profile } = get();
+    const counts = { ...(profile.value_answer_counts ?? {}) };
+    counts[value] = (counts[value] ?? 0) + 1;
+    const updated = { ...profile, value_answer_counts: counts };
+    saveProfile(updated);
+    set({ profile: updated });
   },
 }));
 

@@ -195,6 +195,32 @@ export default function ProfilePage() {
           <span className="ml-auto text-2xl font-bold text-primary">{profile.weekly_quickwin_target ?? 2}</span>
         </div>
 
+        {/* Werte-Kompass */}
+        {(profile.values ?? []).length > 0 && (
+          <div className="bg-card border rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
+            <p className="text-sm font-semibold flex items-center gap-2">🧭 Deine Werte</p>
+            <div className="flex flex-wrap gap-2">
+              {(profile.values ?? []).map((v) => {
+                const count = profile.value_answer_counts?.[v] ?? 0;
+                return (
+                  <div
+                    key={v}
+                    className="flex items-center gap-2 bg-violet-50 dark:bg-violet-950 border border-violet-200 dark:border-violet-800 rounded-xl px-3 py-2"
+                  >
+                    <span className="text-sm font-medium text-violet-700 dark:text-violet-300">{v}</span>
+                    {count > 0 && (
+                      <span className="text-xs bg-violet-200 dark:bg-violet-800 text-violet-700 dark:text-violet-200 rounded-full px-1.5 py-0.5 font-semibold">
+                        {count}×
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-muted-foreground">Anzahl reflektierter Check-ins pro Wert.</p>
+          </div>
+        )}
+
         {/* Logout */}
         <button
           onClick={handleLogout}
