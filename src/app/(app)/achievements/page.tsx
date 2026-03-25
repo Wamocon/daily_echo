@@ -27,7 +27,7 @@ export default function AchievementsPage() {
   const nextGoal = ACHIEVEMENTS.find((a) => !unlockedAchievements.includes(a.id));
 
   return (
-    <div className="min-h-screen px-4 pt-10 pb-32 lg:pb-10 max-w-lg mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="flex flex-col gap-6">
 
         <div>

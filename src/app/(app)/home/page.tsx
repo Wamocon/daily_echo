@@ -38,19 +38,19 @@ export default function DashboardPage() {
 
   if (!isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="w-full max-w-5xl mx-auto">
         <p className="text-muted-foreground animate-pulse">Laden...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="w-full max-w-5xl mx-auto">
       <LevelUpModal />
-      <div className="flex flex-col gap-6 px-4 pt-10 pb-32 lg:pb-10 w-full max-w-lg mx-auto">
+      <div className="flex flex-col gap-6 w-full">
 
         {/* Begrüßung */}
-        <div>
+        <div className="lg:hidden">
           <h1 className="text-2xl font-bold">
             {isMorningTime ? 'Guten Morgen' : isEveningTime ? 'Guten Abend' : 'Hallo'}
             {profile.onboarding_name ? `, ${profile.onboarding_name}` : profile.display_name ? `, ${profile.display_name}` : ''}! 👋

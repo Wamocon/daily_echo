@@ -16,7 +16,7 @@ function CheckinContent() {
 
   if (alreadyDone) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+      <div className="w-full max-w-5xl mx-auto">
         <p className="text-5xl">✅</p>
         <h2 className="text-xl font-semibold">
           {mode === 'morning' ? 'Morgen' : 'Abend'}-Check-in bereits erledigt
@@ -33,7 +33,7 @@ function CheckinContent() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col pt-12 pb-32">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="text-center mb-6 px-4">
         <span className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
           {mode === 'morning' ? '🌅 Morgen-Check-in' : '🌙 Abend-Check-in'}

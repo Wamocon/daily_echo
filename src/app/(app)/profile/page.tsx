@@ -62,7 +62,7 @@ export default function ProfilePage() {
     .slice(0, 2);
 
   return (
-    <div className="min-h-screen px-4 pt-8 pb-32 lg:pb-8 max-w-lg mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="flex flex-col gap-6">
 
         {/* Header */}

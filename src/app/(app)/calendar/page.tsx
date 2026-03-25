@@ -88,7 +88,7 @@ export default function CalendarPage() {
   });
 
   return (
-    <div className="min-h-screen px-4 pt-8 pb-32 lg:pb-8 max-w-5xl mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <motion.div
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}

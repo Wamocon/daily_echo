@@ -47,7 +47,7 @@ export default function HistoryPage() {
   }, []);
 
   return (
-    <div className="min-h-screen px-4 pt-12 pb-32 max-w-lg mx-auto">
+    <div className="w-full max-w-5xl mx-auto">
       <div className="flex flex-col gap-6">
         <h1 className="text-2xl font-bold">Verlauf</h1>
 
