@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation';
 import { PenLine, Sun, Moon, Calendar, ChevronRight, CheckCircle2 } from 'lucide-react';
 import { getOnThisDay } from '@/lib/storage';
 import { DailyEntry } from '@/types';
+import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 
@@ -64,10 +65,13 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* BENTO GRID */}
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 w-full">
+      {/* DASHBOARD LAYOUT & SIDEBAR */}
+      <div className="flex flex-col lg:flex-row gap-6 w-full items-start">
+        
+        {/* BENTO GRID (Main Content) */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-5 w-full lg:flex-1">
 
-        {/* --- 1. Haupt-CTA (Hero) --- */}
+          {/* --- 1. Haupt-CTA (Hero) --- */}
         <div className="col-span-1 md:col-span-12 lg:col-span-7 bg-card rounded-[2rem] p-6 lg:p-8 shadow-sm border border-border/40 flex flex-col justify-center relative overflow-hidden group hover:border-primary/20 transition-all">
           <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-500 pointer-events-none" />
           
@@ -185,6 +189,13 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground/70 mt-1">Bleib dran, um deine Historie zu füllen!</p>
           </div>
         )}
+
+        </div>
+
+        {/* --- RIGHT SIDEBAR (Quick Actions) --- */}
+        <aside className="w-full lg:w-80 shrink-0">
+          <QuickActionsSidebar />
+        </aside>
 
       </div>
     </div>
