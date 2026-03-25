@@ -98,6 +98,16 @@ export default function RegisterPage() {
             </Link>
           </p>
         </div>
+
+        {/* Legal footer */}
+        <p className="text-center text-xs text-muted-foreground mt-8 flex gap-4 justify-center">
+          <Link href="/impressum" className="hover:text-foreground transition-colors">
+            Impressum
+          </Link>
+          <Link href="/datenschutz" className="hover:text-foreground transition-colors">
+            Datenschutz
+          </Link>
+        </p>
       </div>
     </div>
   );
