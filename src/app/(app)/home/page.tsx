@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { StreakDisplay } from '@/components/StreakDisplay';
 import { WeeklyGoalRing } from '@/components/WeeklyGoalRing';
@@ -8,17 +8,18 @@ import XPBar from '@/components/XPBar';
 import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { PenLine, Sun, Moon, ChevronRight, CheckCircle2 } from 'lucide-react';
-import { DailyEntry } from '@/types';
+import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
 import { DashboardMoodChart } from '@/components/DashboardMoodChart';
 import { DashboardCalendar } from '@/components/DashboardCalendar';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 
 export default function DashboardPage() {
   const { profile, todayEntry, isInitialized } = useAppStore();
   const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const morningDone = todayEntry?.morning_done ?? false;
   const eveningDone = todayEntry?.evening_done ?? false;
@@ -175,8 +176,40 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* --- RIGHT SIDEBAR (Quick Actions) --- */}
-        <aside className="w-full lg:w-80 shrink-0">
+        {/* --- RIGHT SIDEBAR (Quick Actions) collapsible --- */}
+        {/* Floating toggle tab (desktop only) */}
+        <button
+          onClick={() => setSidebarOpen(o => !o)}
+          className="hidden lg:flex fixed right-0 top-1/2 -translate-y-1/2 z-30 flex-col items-center justify-center gap-1 bg-card border border-border/60 border-r-0 rounded-l-2xl px-2 py-4 shadow-md hover:bg-accent transition-all group"
+          title={sidebarOpen ? 'Panel schließen' : 'Panel öffnen'}
+        >
+          {sidebarOpen
+            ? <PanelRightClose className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+            : <PanelRightOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />}
+          <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-widest writing-mode-vertical" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>
+            Für dich
+          </span>
+        </button>
+
+        <AnimatePresence initial={false}>
+          {sidebarOpen && (
+            <motion.aside
+              key="sidebar"
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: 320 }}
+              exit={{ opacity: 0, width: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+              className="shrink-0 overflow-hidden hidden lg:block"
+            >
+              <div className="w-80">
+                <QuickActionsSidebar />
+              </div>
+            </motion.aside>
+          )}
+        </AnimatePresence>
+
+        {/* Mobile: always shown, no toggle */}
+        <aside className="w-full lg:hidden">
           <QuickActionsSidebar />
         </aside>
 

@@ -185,6 +185,43 @@ function BreathingWidget({ onClose }: { onClose: () => void }) {
 }
 
 // ─────────────────────────────────────────────
+// YOUTUBE LO-FI WIDGET
+// ─────────────────────────────────────────────
+function LofiWidget({ onClose }: { onClose: () => void }) {
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+      className="bg-card rounded-3xl border border-border/40 shadow-sm overflow-hidden"
+    >
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <div className="flex items-center gap-2">
+          <Music className="w-4 h-4 text-indigo-500" />
+          <span className="text-sm font-bold">Lo-Fi Radio</span>
+          <span className="flex gap-1 items-center">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Live</span>
+          </span>
+        </div>
+        <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-accent transition-colors">
+          <X className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
+      </div>
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          className="absolute inset-0 w-full h-full"
+          src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1"
+          title="Lofi Girl – beats to study/relax to"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+        />
+      </div>
+      <p className="px-4 py-3 text-xs text-muted-foreground">
+        Lofi Girl · beats to relax/study to
+      </p>
+    </motion.div>
+  );
+}
+
+// ─────────────────────────────────────────────
 // SUGGESTION CARD
 // ─────────────────────────────────────────────
 type SuggestionCardProps = {
@@ -223,7 +260,7 @@ function SuggestionCard({ icon: Icon, iconBg, title, desc, cta, external, onClic
 // ─────────────────────────────────────────────
 // MAIN SIDEBAR
 // ─────────────────────────────────────────────
-type WidgetId = 'pomodoro' | 'breathe' | null;
+type WidgetId = 'pomodoro' | 'breathe' | 'lofi' | null;
 
 export function QuickActionsSidebar() {
   const { todayEntry, markInterventionDone } = useAppStore();
@@ -257,6 +294,10 @@ export function QuickActionsSidebar() {
         )}
         {activeWidget === 'breathe' && (
           <BreathingWidget key="breathe" onClose={() => setActiveWidget(null)} />
+        )}
+
+        {activeWidget === 'lofi' && (
+          <LofiWidget key="lofi" onClose={() => setActiveWidget(null)} />
         )}
 
         {!activeWidget && (
@@ -315,15 +356,14 @@ export function QuickActionsSidebar() {
               onClick={() => setActiveWidget('breathe')}
             />
 
-            {/* Lo-Fi — öffnet YouTube-Suche */}
+            {/* Lo-Fi — öffnet YouTube-Embed */}
             <SuggestionCard
               icon={Music}
               iconBg="bg-indigo-100 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400"
               title="Lo-Fi Musik"
-              desc="Entspannte Beats zum Konzentrieren"
-              cta="Öffnen"
-              external
-              onClick={() => window.open('https://www.youtube.com/results?search_query=lofi+hip+hop+beats+to+study+relax', '_blank')}
+              desc="Lofi Girl Radio · direkt hier"
+              cta="Abspielen"
+              onClick={() => setActiveWidget('lofi')}
             />
           </motion.div>
         )}
