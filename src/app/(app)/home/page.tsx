@@ -119,45 +119,49 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* --- 5. Status Morgen --- */}
-        <button
-          onClick={() => !morningDone && router.push('/checkin?mode=morning')}
-          className={`col-span-1 md:col-span-6 lg:col-span-4 rounded-[2rem] p-6 shadow-sm border flex items-center gap-5 transition-all text-left group ${
-            morningDone
-              ? 'bg-green-50/30 dark:bg-green-950/20 border-border/40 cursor-default'
-              : 'bg-card border-border/40 hover:border-primary/40 cursor-pointer hover:shadow-md'
-          }`}
-        >
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${morningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-yellow-100 dark:bg-yellow-900/40 group-hover:scale-105'}`}>
-            <Sun className={`w-6 h-6 ${morningDone ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`} />
-          </div>
-          <div>
-            <h3 className="text-base font-semibold group-hover:text-primary transition-colors">Morgen</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {morningDone ? 'Erledigt ✓' : 'Jetzt starten'}
-            </p>
-          </div>
-        </button>
+        {/* --- 5. Status Kombi (Morgen & Abend) --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center">
+          <h3 className="text-sm font-semibold mb-4 text-muted-foreground uppercase tracking-widest pl-1">Dein Rhythmus</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={() => !morningDone && router.push('/checkin?mode=morning')}
+              className={`rounded-2xl p-5 border flex items-center gap-4 transition-all text-left group ${
+                morningDone
+                  ? 'bg-green-50/50 dark:bg-green-950/20 border-border/40 cursor-default'
+                  : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all ${morningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-yellow-100 dark:bg-yellow-900/40 group-hover:scale-110'}`}>
+                <Sun className={`w-6 h-6 ${morningDone ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold group-hover:text-primary transition-colors">Morgen</h3>
+                <p className="text-sm text-muted-foreground mt-0.5 font-medium">
+                  {morningDone ? 'Erledigt ✓' : 'Jetzt starten'}
+                </p>
+              </div>
+            </button>
 
-        {/* --- 4. Status Abend --- */}
-        <button
-          onClick={() => !eveningDone && router.push('/checkin?mode=evening')}
-          className={`col-span-1 md:col-span-6 lg:col-span-4 rounded-[2rem] p-6 shadow-sm border flex items-center gap-5 transition-all text-left group ${
-            eveningDone
-              ? 'bg-green-50/30 dark:bg-green-950/20 border-border/40 cursor-default'
-              : 'bg-card border-border/40 hover:border-primary/40 cursor-pointer hover:shadow-md'
-          }`}
-        >
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 transition-colors ${eveningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-indigo-100 dark:bg-indigo-900/40 group-hover:scale-105'}`}>
-            <Moon className={`w-6 h-6 ${eveningDone ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'}`} />
+            <button
+              onClick={() => !eveningDone && router.push('/checkin?mode=evening')}
+              className={`rounded-2xl p-5 border flex items-center gap-4 transition-all text-left group ${
+                eveningDone
+                  ? 'bg-green-50/50 dark:bg-green-950/20 border-border/40 cursor-default'
+                  : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
+              }`}
+            >
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all ${eveningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-indigo-100 dark:bg-indigo-900/40 group-hover:scale-110'}`}>
+                <Moon className={`w-6 h-6 ${eveningDone ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'}`} />
+              </div>
+              <div>
+                <h3 className="text-base font-bold group-hover:text-primary transition-colors">Abend</h3>
+                <p className="text-sm text-muted-foreground mt-0.5 font-medium">
+                  {eveningDone ? 'Erledigt ✓' : 'Jetzt starten'}
+                </p>
+              </div>
+            </button>
           </div>
-          <div>
-            <h3 className="text-base font-semibold group-hover:text-primary transition-colors">Abend</h3>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {eveningDone ? 'Erledigt ✓' : 'Jetzt starten'}
-            </p>
-          </div>
-        </button>
+        </div>
 
         {/* --- 5. Dashboard Calendar --- */}
         <div className="col-span-1 md:col-span-6 lg:col-span-4 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center">
