@@ -102,7 +102,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     } else if (context === 'evening') {
       setStep('quickwin');
     } else {
-      completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
+      // Don't completeCheckin yet — do it in the intervention step buttons
       goToIntervention();
     }
   };
@@ -116,7 +116,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (context === 'evening') {
       setStep('quickwin');
     } else {
-      completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
+      // Don't completeCheckin yet — do it in the intervention step buttons
       goToIntervention();
     }
   };
@@ -150,7 +150,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (hasQuickWin && quickWin.trim()) {
       saveQuickWin(quickWin.trim());
     }
-    completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
+    // Don't completeCheckin yet — do it in the intervention step buttons
     goToIntervention();
   };
 
@@ -622,6 +622,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             <Button
               onClick={() => {
                 markInterventionDone();
+                completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
                 setStep('done');
                 setTimeout(onComplete, 2500);
               }}
@@ -633,6 +634,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             <Button
               variant="ghost"
               onClick={() => {
+                completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
                 setStep('done');
                 setTimeout(onComplete, 2500);
               }}
