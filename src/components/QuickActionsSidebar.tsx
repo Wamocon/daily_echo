@@ -194,6 +194,14 @@ function BreathingWidget({ onClose, isRunning, setIsRunning }: {
 // YOUTUBE LO-FI WIDGET
 // ─────────────────────────────────────────────
 function LofiWidget({ onClose }: { onClose: () => void }) {
+  // We control the iframe src via state so that clearing it stops audio immediately.
+  const [active, setActive] = useState(true);
+
+  const handleClose = () => {
+    setActive(false);          // clears src → stops audio
+    setTimeout(onClose, 50);   // then unmount
+  };
+
   return (
     <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
       className="bg-card rounded-3xl border border-border/40 shadow-sm overflow-hidden"
@@ -203,18 +211,18 @@ function LofiWidget({ onClose }: { onClose: () => void }) {
           <Music className="w-4 h-4 text-indigo-500" />
           <span className="text-sm font-bold">Lo-Fi Radio</span>
           <span className="flex gap-1 items-center">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">Live</span>
+            {active && <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />}
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{active ? 'Live' : 'Gestoppt'}</span>
           </span>
         </div>
-        <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-accent transition-colors">
+        <button onClick={handleClose} className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-accent transition-colors">
           <X className="w-3.5 h-3.5 text-muted-foreground" />
         </button>
       </div>
       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
         <iframe
           className="absolute inset-0 w-full h-full"
-          src="https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1"
+          src={active ? 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&loop=1' : ''}
           title="Lofi Girl – beats to study/relax to"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowFullScreen
@@ -321,9 +329,10 @@ export function QuickActionsSidebar() {
           setIsRunning={setBreatheRunning}
         />
       </div>
-      <div className={activeWidget === 'lofi' ? '' : 'hidden'}>
+      {/* LoFi is NOT kept in DOM when closed — src must be cleared to stop audio */}
+      {activeWidget === 'lofi' && (
         <LofiWidget onClose={() => setActiveWidget(null)} />
-      </div>
+      )}
 
       {/* Suggestion list — shown when no widget is expanded */}
       <AnimatePresence mode="wait">

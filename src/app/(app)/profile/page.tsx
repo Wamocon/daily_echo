@@ -1,13 +1,19 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Switch } from '@/components/ui/material-design-3-switch';
+import { NotificationPrefs } from '@/types';
+import { getNotifPrefs, saveNotifPrefs } from '@/lib/storage';
+import { requestNotificationPermission, scheduleNotifications, showTestNotification } from '@/lib/notifications';
+import { cn } from '@/lib/utils';
 import {
   User, Pencil, LogOut, Flame, CheckCircle2, Zap, Target, Save, X,
+  Bell, BellOff, Clock, CheckCircle, AlertCircle, ChevronDown,
 } from 'lucide-react';
 
 const GOAL_OPTIONS = [
@@ -27,6 +33,50 @@ export default function ProfilePage() {
   const [editJob, setEditJob] = useState(profile.onboarding_job ?? '');
   const [editGoal, setEditGoal] = useState(profile.onboarding_goal ?? '');
   const [editTarget, setEditTarget] = useState(profile.weekly_quickwin_target ?? 2);
+
+  // Notification section
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [prefs, setPrefs] = useState<NotificationPrefs>(getNotifPrefs());
+  const [permission, setPermission] = useState<NotificationPermission>('default');
+  const [notifSaving, setNotifSaving] = useState(false);
+  const [notifSaved, setNotifSaved] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      setPermission(Notification.permission);
+    }
+  }, []);
+
+  const handleEnableNotif = async () => {
+    const granted = await requestNotificationPermission();
+    if (granted) {
+      setPermission('granted');
+      const updated = { ...prefs, enabled: true };
+      setPrefs(updated);
+      saveNotifPrefs(updated);
+      scheduleNotifications();
+      showTestNotification();
+    } else {
+      setPermission(Notification.permission);
+    }
+  };
+
+  const handleSaveNotif = async () => {
+    setNotifSaving(true);
+    saveNotifPrefs(prefs);
+    scheduleNotifications();
+    await new Promise((r) => setTimeout(r, 400));
+    setNotifSaving(false);
+    setNotifSaved(true);
+    setTimeout(() => setNotifSaved(false), 2000);
+  };
+
+  const updatePref = <K extends keyof NotificationPrefs>(key: K, value: NotificationPrefs[K]) => {
+    setPrefs((p) => ({ ...p, [key]: value }));
+    setNotifSaved(false);
+  };
+
+  const notifSupported = typeof window !== 'undefined' && 'Notification' in window;
 
   const handleSave = () => {
     updateProfile({
@@ -220,6 +270,110 @@ export default function ProfilePage() {
             <p className="text-xs text-muted-foreground">Anzahl reflektierter Check-ins pro Wert.</p>
           </div>
         )}
+
+        {/* ====== Erinnerungen ====== */}
+        <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
+          <button
+            className="w-full flex items-center justify-between px-5 py-4 hover:bg-accent/30 transition-colors"
+            onClick={() => setNotifOpen((v) => !v)}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Bell className="w-4 h-4 text-blue-500" />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-semibold">Erinnerungen</p>
+                <p className="text-xs text-muted-foreground">Tägliche Check-in Benachrichtigungen</p>
+              </div>
+            </div>
+            <ChevronDown className={cn('w-4 h-4 text-muted-foreground transition-transform', notifOpen && 'rotate-180')} />
+          </button>
+
+          <AnimatePresence>
+            {notifOpen && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden"
+              >
+                <div className="px-5 pb-5 flex flex-col gap-4 border-t border-border pt-4">
+                  {!notifSupported ? (
+                    <div className="bg-muted/50 border border-dashed rounded-xl p-3 flex items-center gap-2 text-sm text-muted-foreground">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      Dein Browser unterstützt keine Benachrichtigungen.
+                    </div>
+                  ) : permission === 'denied' ? (
+                    <div className="bg-destructive/10 border border-destructive/20 rounded-xl p-3 flex items-start gap-2">
+                      <BellOff className="w-4 h-4 text-destructive mt-0.5 shrink-0" />
+                      <p className="text-xs text-muted-foreground">Geh in die Browser-Einstellungen → Benachrichtigungen → diese Seite erlauben, dann neu laden.</p>
+                    </div>
+                  ) : permission === 'default' ? (
+                    <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 flex flex-col gap-2">
+                      <p className="text-xs text-muted-foreground">Erlaube Benachrichtigungen, um dich täglich für deinen Check-in erinnern zu lassen.</p>
+                      <Button onClick={handleEnableNotif} size="sm" className="self-start gap-2">
+                        <Bell className="w-3.5 h-3.5" /> Aktivieren
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-xl p-3 flex items-center gap-2">
+                      <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
+                      <p className="text-sm font-medium text-green-700 dark:text-green-400">Benachrichtigungen erlaubt</p>
+                      <button onClick={showTestNotification} className="ml-auto text-xs text-muted-foreground underline hover:text-foreground">Test</button>
+                    </div>
+                  )}
+
+                  {notifSupported && permission === 'granted' && (
+                    <>
+                      <div className="bg-background border rounded-xl overflow-hidden">
+                        {/* Master Toggle */}
+                        <div className="flex items-center justify-between px-4 py-3 border-b">
+                          <div className="flex items-center gap-2">
+                            <Bell className={cn('w-4 h-4', prefs.enabled ? 'text-primary' : 'text-muted-foreground')} />
+                            <p className="text-sm font-medium">Alle Erinnerungen</p>
+                          </div>
+                          <Switch size="sm" checked={prefs.enabled} onCheckedChange={(v) => updatePref('enabled', v)} />
+                        </div>
+                        {/* Morning */}
+                        <div className={cn('flex items-center justify-between px-4 py-3 border-b transition-opacity', !prefs.enabled && 'opacity-40 pointer-events-none')}>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-yellow-500" />
+                            <p className="text-sm">🌅 Morgens um</p>
+                          </div>
+                          <input type="time" value={prefs.morningTime}
+                            onChange={(e) => updatePref('morningTime', e.target.value)}
+                            className="bg-muted border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                        </div>
+                        {/* Evening */}
+                        <div className={cn('flex items-center justify-between px-4 py-3 border-b transition-opacity', !prefs.enabled && 'opacity-40 pointer-events-none')}>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-indigo-500" />
+                            <p className="text-sm">🌙 Abends um</p>
+                          </div>
+                          <input type="time" value={prefs.eveningTime}
+                            onChange={(e) => updatePref('eveningTime', e.target.value)}
+                            className="bg-muted border rounded-lg px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40" />
+                        </div>
+                        {/* Quick Win Reminder */}
+                        <div className={cn('flex items-center justify-between px-4 py-3 transition-opacity', !prefs.enabled && 'opacity-40 pointer-events-none')}>
+                          <div className="flex items-center gap-2">
+                            <Zap className="w-4 h-4 text-amber-500" />
+                            <p className="text-sm">⚡ Quick Win Tipp freitags</p>
+                          </div>
+                          <Switch size="sm" checked={prefs.quickwinReminder} onCheckedChange={(v) => updatePref('quickwinReminder', v)} />
+                        </div>
+                      </div>
+                      <Button onClick={handleSaveNotif} disabled={notifSaving} size="sm" className="self-end gap-2">
+                        {notifSaving ? 'Speichern…' : notifSaved ? '✓ Gespeichert' : 'Speichern'}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
         {/* Logout */}
         <button

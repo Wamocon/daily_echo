@@ -55,6 +55,46 @@ export const ROLE_COLORS: Record<string, string> = {
   guest: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
 };
 
+// Admin overrides: allow editing demo account display data at runtime.
+const ADMIN_OVERRIDES_KEY = 'dailyecho_admin_overrides';
+
+export interface AccountOverride {
+  id: string;
+  name?: string;
+  pin?: string;
+  tagline?: string;
+  role?: UserRole;
+}
+
+export function getAdminOverrides(): AccountOverride[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem(ADMIN_OVERRIDES_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveAdminOverrides(overrides: AccountOverride[]): void {
+  localStorage.setItem(ADMIN_OVERRIDES_KEY, JSON.stringify(overrides));
+}
+
+export function getEffectiveDemoAccounts(): DemoAccount[] {
+  const overrides = getAdminOverrides();
+  return DEMO_ACCOUNTS.map((acc) => {
+    const ov = overrides.find((o) => o.id === acc.id);
+    if (!ov) return acc;
+    return {
+      ...acc,
+      ...(ov.name !== undefined && { name: ov.name }),
+      ...(ov.pin !== undefined && { pin: ov.pin }),
+      ...(ov.tagline !== undefined && { tagline: ov.tagline }),
+      ...(ov.role !== undefined && { role: ov.role }),
+    };
+  });
+}
+
 export function getCurrentUser(): AuthUser | null {
   if (typeof window === 'undefined') return null;
   try {
