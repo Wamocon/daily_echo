@@ -27,6 +27,8 @@ export interface DailyEntry {
   morning_intention: string | null;
   intention_result: 'done' | 'partial' | 'missed' | null;
   intention_comment: string | null;
+  // Sprint 4: Micro-Interventions
+  intervention_done: boolean;
   created_at: string;
 }
 
