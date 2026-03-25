@@ -37,6 +37,7 @@ function defaultProfile(): UserProfile {
     onboarding_goal: null,
     weekly_quickwin_target: 2,
     onboarding_complete: false,
+    loop_closed_count: 0,
   };
 }
 
@@ -77,6 +78,9 @@ export function createEmptyEntry(date: string): DailyEntry {
     journal_text: null,
     has_quickwin: false,
     quickwin_text: null,
+    morning_intention: null,
+    intention_result: null,
+    intention_comment: null,
     created_at: new Date().toISOString(),
   };
 }
