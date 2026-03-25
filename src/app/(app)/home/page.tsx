@@ -106,12 +106,12 @@ export default function DashboardPage() {
         </div>
 
         {/* --- 2. Streak --- */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-2 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
+        <div className="col-span-1 md:col-span-6 lg:col-span-3 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
           <StreakDisplay />
         </div>
 
         {/* --- 3. Wochenziel --- */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-3 bg-card rounded-[2rem] py-6 px-4 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
+        <div className="col-span-1 md:col-span-6 lg:col-span-2 bg-card rounded-[2rem] py-6 px-4 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
           <div className="scale-90 origin-center">
             <WeeklyGoalRing />
           </div>

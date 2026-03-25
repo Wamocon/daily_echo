@@ -60,44 +60,48 @@ npx shadcn@latest add https://21st.dev/r/aliimam/gradient-text
 ## Feature-Schritte
 
 ### Phase 1 — Setup & Infrastruktur (~3h)
-- [ ] Next.js 15 initialisieren (`npx create-next-app@latest`)
-- [ ] Tailwind + shadcn/ui konfigurieren
-- [ ] 21st.dev Komponenten installieren
-- [ ] Supabase Projekt anlegen + Schema deployen (3 Tabellen + RLS)
-- [ ] Supabase Auth Flow (Magic Link + E-Mail/Passwort)
-- [ ] Zustand Store-Skeleton anlegen
+- [x] Next.js 15 initialisieren (`npx create-next-app@latest`)
+- [x] Tailwind + shadcn/ui konfigurieren
+- [x] 21st.dev Komponenten installieren
+- [x] Supabase Schema-File erstellen (`supabase/migrations/001_initial_schema.sql`)
+- [ ] Supabase Projekt live deployen (Remote-Projekt anlegen, Schema pushen, RLS aktivieren)
+- [ ] Supabase Auth Flow (Magic Link / E-Mail+Passwort) — aktuell: Mock-Auth via DEMO_ACCOUNTS
+- [x] Zustand Store-Skeleton anlegen
 - [ ] Vercel Projekt + Preview Deployments verknüpfen
-- [ ] Ordnerstruktur einrichten
+- [x] Ordnerstruktur einrichten
 
 ### Phase 2 — Daten & State (~2h)
-- [ ] Datenmodell TypeScript-Typen definieren (`types/index.ts`)
-- [ ] Supabase Client/Server Helper (`lib/supabase/`)
-- [ ] Zustand Store (`store/useAppStore.ts`) mit Supabase-Sync
-- [ ] Streak-Logik implementieren (inkl. Freeze)
-- [ ] Achievement-Checker implementieren
+- [x] Datenmodell TypeScript-Typen definieren (`types/index.ts`)
+- [x] Supabase Client/Server Helper (`lib/supabase/`)
+- [x] Zustand Store (`store/useAppStore.ts`) — localStorage-basiert
+- [ ] Supabase-Sync im Zustand Store (aktuell nur localStorage, kein Remote-Sync)
+- [x] Streak-Logik implementieren (inkl. Freeze)
+- [x] Achievement-Checker implementieren (10 Achievements)
 
 ### Phase 3 — Kern-Features (~8h)
-- [ ] Mood Tracker Komponente (5 Stufen, Emoji)
-- [ ] Suggestion-Map (Mood × Kontext → 3 Vorschläge)
-- [ ] Morgen Check-in Flow (3 Fragen + Mood)
-- [ ] Abend Check-in Flow (3 Fragen + Mood + QuickWin)
-- [ ] Expandable Tabs (Morgen/Abend Umschaltung)
-- [ ] QuickWin Wochenzähler (2/2 Anzeige)
+- [x] Mood Tracker Komponente (5 Stufen, Emoji)
+- [x] Suggestion-Map (Mood × Kontext → 3 Vorschläge)
+- [x] Morgen Check-in Flow (3 Fragen + Mood + Intention)
+- [x] Abend Check-in Flow (3 Fragen + Mood + QuickWin + Intention-Result)
+- [x] Expandable Tabs (Morgen/Abend Umschaltung)
+- [x] QuickWin Wochenzähler (2/2 Anzeige)
 
 ### Phase 4 — Gamification (~4h)
-- [ ] Streak-Anzeige (Gradient Text + Flammen-Emoji)
-- [ ] Streak Freeze Button (1x/Woche)
-- [ ] Wochenziel-Fortschrittsring (Recharts RadialBar)
-- [ ] Achievement Badges Grid (8 Badges)
-- [ ] Badge-Unlock Animation (Framer Motion)
+- [x] Streak-Anzeige (Gradient Text + Flammen-Emoji)
+- [x] Streak Freeze Button (1x/Woche)
+- [x] Wochenziel-Fortschrittsring (Recharts RadialBar)
+- [x] Achievement Badges Grid (10 Badges + Fortschrittsbalken)
+- [x] Level-Up Animation (Framer Motion, LevelUpModal)
+- [x] XP-System (lib/xp.ts, XPBar-Komponente, 10 Level)
+- [x] Unlockables-Seite in `/achievements` (Level-2–10 Freischaltungen)
 
 ### Phase 5 — Dashboard & UI-Polish (~4h)
-- [ ] Startseite / Dashboard zusammenführen
-- [ ] "On this Day"-Erinnerungen
-- [ ] Tubelight Navbar (Home / Check-in / Achievements / Verlauf)
-- [ ] Aurora Background für Dashboard
-- [ ] Responsive Layout testen (Mobile + Desktop)
-- [ ] Dark Mode support
+- [x] Startseite / Dashboard zusammenführen (Bento-Grid, `/home`)
+- [x] "On this Day"-Erinnerungen (History-Seite)
+- [x] Tubelight Navbar (Home / Check-in / Achievements / Verlauf)
+- [x] Aurora Background für Dashboard
+- [x] Responsive Layout (Mobile + Desktop)
+- [x] Dark Mode support (ThemeProvider + ThemeSwitch)
 
 ---
 
@@ -162,8 +166,28 @@ src/
 
 ---
 
-## Review
-*(wird nach Fertigstellung befüllt)*
+## Review (Stand: März 2026)
+
+### ✅ Feature-Vollständigkeit
+- Alle ursprünglich geplanten Kern-Features sind implementiert
+- **Sprint 1** (Geführte Reflexion): Done — Perspektivwechsel, Reframing, Mood-Kontext-Klärung im CheckinFlow
+- **Sprint 2** (Intention-Loop): Done — Morgen-Intention + Abend-Auflösung mit 3 Chips
+- **Sprint 3** (XP/Level/Unlockables): Done — lib/xp.ts, XPBar, LevelUpModal, Unlockables-Seite
+- **Sprint 4** (Micro-Interventionen): Done — interventions.ts, Interventionskarten in QuickActionsSidebar
+- **Sprint 5** (Werte-Kompass): Done — OnboardingFlow Schritt 6 + values-basierte Fragen in questions.ts
+
+### ⬜ Noch offen (Go-Live Blockers)
+- Supabase Projekt live schalten + Schema deployen
+- Supabase Real Auth (aktuell: DEMO_ACCOUNTS Mock)
+- Zustand Store auf Supabase-Sync umstellen
+- Vercel Projekt + Preview Deployments
+
+### ⬜ Noch offen (Backlog)
+- XP-Abzug bei verpassten Tagen (lib/xp.ts hat die Konstanten, aber kein aktiver Background-Job)
+- Kalender-Heatmap Mood-View (B9)
+- Landing Page (B10)
+- SEO Metadata (B12)
+- Export als PDF / Jahresbericht (B15)
 
 
 ## Redesign Phasen (Basierend auf UI Vorschl�gen)

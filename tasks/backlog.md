@@ -8,11 +8,11 @@
 
 | Sprint | Branch | Thema | Status |
 |--------|--------|-------|--------|
-| S1 | `sprint/1-guided-reflection` | Geführte Reflexion (Reframing + Perspektivwechsel) | 🟡 In Entwicklung |
-| S2 | `sprint/2-intention-loop` | Intention-Loop (Morgen → Abend Brücke) | ⬜ Wartet auf Freigabe S1 |
-| S3 | `sprint/3-xp-level-system` | XP / Level / Unlockables | ⬜ Wartet auf Freigabe S2 |
-| S4 | `sprint/4-micro-interventions` | Micro-Interventionen nach Check-in | ⬜ Wartet auf Freigabe S3 |
-| S5 | `sprint/5-values-compass` | Werte-Kompass im Onboarding | ⬜ Wartet auf Freigabe S4 |
+| S1 | `sprint/1-guided-reflection` | Geführte Reflexion (Reframing + Perspektivwechsel) | ✅ Done |
+| S2 | `sprint/2-intention-loop` | Intention-Loop (Morgen → Abend Brücke) | ✅ Done |
+| S3 | `sprint/3-xp-level-system` | XP / Level / Unlockables | ✅ Done |
+| S4 | `sprint/4-micro-interventions` | Micro-Interventionen nach Check-in | ✅ Done |
+| S5 | `sprint/5-values-compass` | Werte-Kompass im Onboarding | ✅ Done |
 
 ---
 
