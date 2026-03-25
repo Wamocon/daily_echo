@@ -43,7 +43,7 @@ export default function AchievementsPage() {
   const categories = ['feature', 'cosmetic', 'theme'] as const;
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 pb-20">
+    <div className="w-full max-w-6xl mx-auto">
       
       {/* HEADER & TABS */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 mt-2">

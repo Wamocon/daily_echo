@@ -50,7 +50,7 @@ export default function AdminPage() {
   ];
 
   return (
-    <div className="min-h-screen p-6 max-w-4xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -16 }}
@@ -105,7 +105,7 @@ export default function AdminPage() {
         <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3 flex items-center gap-2">
           <Activity className="w-3.5 h-3.5" /> Wochenziel (aktuell)
         </h2>
-        <div className="bg-card border rounded-2xl p-5 space-y-4">
+        <div className="bg-card rounded-[2rem] border border-border/40 p-5 space-y-4">
           {[
             { label: 'Check-ins', current: weeklyGoal.checkins, goal: weeklyGoal.checkinGoal, color: 'bg-blue-500' },
             { label: 'Quick Wins', current: weeklyGoal.quickwins, goal: weeklyGoal.quickwinGoal, color: 'bg-yellow-500' },
@@ -150,7 +150,7 @@ export default function AdminPage() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.35 + i * 0.07 }}
                 className={cn(
-                  'bg-card border rounded-2xl p-4',
+                  'bg-card rounded-[2rem] border border-border/40 p-4',
                   account.id === currentUser?.id && 'ring-2 ring-primary'
                 )}
               >

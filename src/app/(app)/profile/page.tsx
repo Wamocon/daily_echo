@@ -112,7 +112,7 @@ export default function ProfilePage() {
     .slice(0, 2);
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto">
       <div className="flex flex-col gap-6">
 
         {/* Header */}
@@ -142,7 +142,7 @@ export default function ProfilePage() {
         {/* Avatar + Name */}
         <motion.div
           layout
-          className="bg-card border rounded-2xl p-6 flex flex-col items-center gap-4 shadow-sm"
+          className="bg-card rounded-[2rem] border border-border/40 p-6 flex flex-col items-center gap-4 shadow-sm"
         >
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-bold text-xl shadow">
             {initials}
@@ -236,7 +236,7 @@ export default function ProfilePage() {
         </div>
 
         {/* Wöchentliches Ziel */}
-        <div className="bg-card border rounded-2xl p-4 flex items-center gap-3 shadow-sm">
+        <div className="bg-card rounded-[2rem] border border-border/40 p-4 flex items-center gap-3 shadow-sm">
           <Target className="w-5 h-5 text-primary shrink-0" />
           <div>
             <p className="text-sm font-medium">Wöchentliches Quick Win Ziel</p>
@@ -247,7 +247,7 @@ export default function ProfilePage() {
 
         {/* Werte-Kompass */}
         {(profile.values ?? []).length > 0 && (
-          <div className="bg-card border rounded-2xl p-4 flex flex-col gap-3 shadow-sm">
+          <div className="bg-card rounded-[2rem] border border-border/40 p-4 flex flex-col gap-3 shadow-sm">
             <p className="text-sm font-semibold flex items-center gap-2">🧭 Deine Werte</p>
             <div className="flex flex-wrap gap-2">
               {(profile.values ?? []).map((v) => {
@@ -272,7 +272,7 @@ export default function ProfilePage() {
         )}
 
         {/* ====== Erinnerungen ====== */}
-        <div className="bg-card border rounded-2xl overflow-hidden shadow-sm">
+        <div className="bg-card rounded-[2rem] border border-border/40 overflow-hidden shadow-sm">
           <button
             className="w-full flex items-center justify-between px-5 py-4 hover:bg-accent/30 transition-colors"
             onClick={() => setNotifOpen((v) => !v)}

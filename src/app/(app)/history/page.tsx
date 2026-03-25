@@ -117,7 +117,7 @@ export default function HistoryPage() {
   const sortedWeeks = Object.keys(allByWeek).sort((a, b) => b.localeCompare(a));
 
   return (
-    <div className="w-full max-w-5xl mx-auto">
+    <div className="w-full max-w-6xl mx-auto">
       <div className="flex flex-col gap-8">
 
         {/* ── Quick Wins Sektion ── */}
@@ -133,7 +133,7 @@ export default function HistoryPage() {
           </div>
 
           {/* Week Nav */}
-          <div className="bg-card border rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+          <div className="bg-card rounded-[2rem] border border-border/40 p-4 shadow-sm flex flex-col gap-3">
             <div className="flex items-center justify-between">
               <button onClick={() => navigateWeek(-1)} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
                 <ChevronLeft className="w-4 h-4" />
@@ -176,7 +176,7 @@ export default function HistoryPage() {
 
           {/* Add input (current week only) */}
           {currentWeek === todayWeek && (
-            <div className="bg-card border rounded-2xl p-4 shadow-sm flex gap-2">
+            <div className="bg-card rounded-[2rem] border border-border/40 p-4 shadow-sm flex gap-2">
               <input
                 value={newText}
                 onChange={(e) => setNewText(e.target.value)}
