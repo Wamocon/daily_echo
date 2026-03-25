@@ -10,6 +10,7 @@ export const XP = {
   STREAK_MILESTONE: 100,
   DAY_MISSED: -5,
   DAYS_MISSED_LONG: -20, // 3+ days missed
+  INTERVENTION_DONE: 5,
 } as const;
 
 // ─── Level Thresholds ─────────────────────────────────────────────────────────

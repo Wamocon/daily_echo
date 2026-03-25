@@ -7,8 +7,9 @@ import { MoodPicker } from '@/components/MoodPicker';
 import { MoodSuggestions } from '@/components/MoodSuggestions';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, CheckCircle2, Flame, Plus, Heart, RefreshCw, Target, CheckCheck } from 'lucide-react';
+import { ChevronRight, CheckCircle2, Flame, Plus, Heart, RefreshCw, Target, CheckCheck, Sparkles } from 'lucide-react';
 import { getCoreQuestions, pickRandomOptional, Question } from '@/lib/questions';
+import { getIntervention, InterventionCard } from '@/lib/interventions';
 
 interface CheckinFlowProps {
   context: CheckinContext;
@@ -17,7 +18,7 @@ interface CheckinFlowProps {
 
 type MoodDuration = 'just-today' | 'few-days' | 'a-while';
 type IntentionResult = 'done' | 'partial' | 'missed';
-type Step = 'mood' | 'mood-context' | 'intention' | 'questions' | 'intention-result' | 'perspective' | 'reframing' | 'quickwin' | 'done';
+type Step = 'mood' | 'mood-context' | 'intention' | 'questions' | 'intention-result' | 'perspective' | 'reframing' | 'quickwin' | 'intervention' | 'done';
 
 export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [step, setStep] = useState<Step>('mood');
@@ -37,13 +38,15 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
   const [intentionResult, setIntentionResult] = useState<IntentionResult | null>(null);
   const [intentionComment, setIntentionComment] = useState('');
 
-  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult, xpGained, clearXPFeedback } = useAppStore();
+  const { saveMood, saveAnswers, saveQuickWin, completeCheckin, profile, todayEntry, saveIntention, saveIntentionResult, xpGained, clearXPFeedback, markInterventionDone } = useAppStore();
   const coreQuestions = getCoreQuestions(context);
   const allQuestions = [...coreQuestions, ...extraQuestions];
   const MAX_OPTIONAL = 2;
   const isLowMood = selectedMood !== null && selectedMood <= 2;
   // Yesterday's intention for evening loop
   const morningIntention = todayEntry?.morning_intention ?? null;
+  // Intervention card — set when navigating to the intervention step
+  const [interventionCard, setInterventionCard] = useState<InterventionCard | null>(null);
 
   const handleMoodNext = () => {
     if (!selectedMood) return;
@@ -85,6 +88,12 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     setStep('questions');
   };
 
+  // Navigate to the intervention step (called after completeCheckin)
+  const goToIntervention = () => {
+    setInterventionCard(getIntervention(selectedMood ?? 3, context));
+    setStep('intervention');
+  };
+
   // Nach letzter Frage: low mood → Perspektivwechsel, sonst weiter
   const proceedAfterQuestions = () => {
     saveAnswers(answers, context);
@@ -93,9 +102,8 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     } else if (context === 'evening') {
       setStep('quickwin');
     } else {
-      completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
-      setStep('done');
-      setTimeout(onComplete, 2500);
+      // Don't completeCheckin yet — do it in the intervention step buttons
+      goToIntervention();
     }
   };
 
@@ -108,9 +116,8 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (context === 'evening') {
       setStep('quickwin');
     } else {
-      completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
-      setStep('done');
-      setTimeout(onComplete, 2500);
+      // Don't completeCheckin yet — do it in the intervention step buttons
+      goToIntervention();
     }
   };
 
@@ -143,9 +150,8 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
     if (hasQuickWin && quickWin.trim()) {
       saveQuickWin(quickWin.trim());
     }
-    completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
-    setStep('done');
-    setTimeout(onComplete, 2500);
+    // Don't completeCheckin yet — do it in the intervention step buttons
+    goToIntervention();
   };
 
   const isLastCoreQuestion = currentQuestion === coreQuestions.length - 1;
@@ -584,6 +590,58 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 Check-in abschließen
               </Button>
             )}
+          </motion.div>
+        )}
+
+        {step === 'intervention' && interventionCard && (
+          <motion.div
+            key="intervention"
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -40 }}
+            transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+            className="flex flex-col gap-5"
+          >
+            <div className="flex items-center gap-2 text-xs font-semibold text-violet-500 uppercase tracking-widest">
+              <Sparkles className="w-4 h-4" />
+              Micro-Intervention
+            </div>
+            <div className="bg-gradient-to-br from-violet-50 to-purple-50 dark:from-violet-950 dark:to-purple-950 rounded-2xl border border-violet-200 dark:border-violet-800 p-6 flex flex-col gap-3">
+              <div className="flex items-start gap-4">
+                <span className="text-4xl">{interventionCard.emoji}</span>
+                <div className="flex-1">
+                  <h3 className="font-bold text-lg leading-tight">{interventionCard.title}</h3>
+                  <span className="text-xs text-violet-500 font-medium">⏱ {interventionCard.duration}</span>
+                </div>
+              </div>
+              <p className="text-sm text-foreground/80 leading-relaxed">{interventionCard.description}</p>
+            </div>
+            <div className="text-xs text-center text-muted-foreground">
+              Versuche diese kleine Aktion — für sich selbst.
+            </div>
+            <Button
+              onClick={() => {
+                markInterventionDone();
+                completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
+                setStep('done');
+                setTimeout(onComplete, 2500);
+              }}
+              className="w-full bg-violet-600 hover:bg-violet-700 text-white"
+            >
+              <CheckCheck className="w-4 h-4 mr-2" />
+              Erledigt — +5 XP
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                completeCheckin(context, usedPromptLibrary, perspectiveCompleted);
+                setStep('done');
+                setTimeout(onComplete, 2500);
+              }}
+              className="w-full text-muted-foreground"
+            >
+              Überspringen
+            </Button>
           </motion.div>
         )}
 
