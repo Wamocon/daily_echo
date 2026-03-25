@@ -38,6 +38,8 @@ function defaultProfile(): UserProfile {
     weekly_quickwin_target: 2,
     onboarding_complete: false,
     loop_closed_count: 0,
+    xp: 0,
+    level: 1,
   };
 }
 

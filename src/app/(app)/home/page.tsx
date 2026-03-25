@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
 import { StreakDisplay } from '@/components/StreakDisplay';
 import { WeeklyGoalRing } from '@/components/WeeklyGoalRing';
+import XPBar from '@/components/XPBar';
+import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import { PenLine, Sun, Moon, Calendar } from 'lucide-react';
@@ -44,6 +46,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen">
+      <LevelUpModal />
       <div className="flex flex-col gap-6 px-4 pt-10 pb-32 lg:pb-10 w-full max-w-lg mx-auto">
 
         {/* Begrüßung */}
@@ -115,13 +118,14 @@ export default function DashboardPage() {
         </div>
 
         {/* Streak + Wochenziel kompakt */}
-        <div className="bg-card rounded-2xl border p-5">
+        <div className="bg-card rounded-2xl border p-5 flex flex-col gap-4">
           <div className="flex items-start justify-between gap-4">
             <StreakDisplay />
             <div className="shrink-0">
               <WeeklyGoalRing />
             </div>
           </div>
+          <XPBar xp={profile.xp ?? 0} level={profile.level ?? 1} />
         </div>
 
         {/* Heute vor einem Jahr — nur wenn Daten vorhanden */}
