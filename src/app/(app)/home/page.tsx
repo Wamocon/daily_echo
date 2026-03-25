@@ -8,7 +8,7 @@ import XPBar from '@/components/XPBar';
 import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen, Sparkles, X } from 'lucide-react';
 import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
 import { DashboardMoodChart } from '@/components/DashboardMoodChart';
 import { DashboardCalendar } from '@/components/DashboardCalendar';
@@ -20,6 +20,7 @@ export default function DashboardPage() {
   const { profile, todayEntry, isInitialized } = useAppStore();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const morningDone = todayEntry?.morning_done ?? false;
   const eveningDone = todayEntry?.evening_done ?? false;
@@ -33,6 +34,10 @@ export default function DashboardPage() {
   const nextCheckinLabel = primaryMode === 'morning'
     ? '🌅 Morgen-Check-in starten'
     : '🌙 Abend-Check-in starten';
+
+  // Red dot for FAB: show when intervention is available
+  const recentMood = (hour >= 5 && hour < 12 ? todayEntry?.morning_mood : todayEntry?.evening_mood) ?? null;
+  const hasIntervention = recentMood !== null && recentMood <= 3 && !todayEntry?.intervention_done;
 
   if (!isInitialized) {
     return (
@@ -205,7 +210,7 @@ export default function DashboardPage() {
                 transition={{ type: 'spring', stiffness: 300, damping: 35 }}
                 className="overflow-hidden"
               >
-                <div className="w-80 bg-muted/40 dark:bg-muted/20 rounded-[2rem] border border-border/40 p-5">
+                <div className="w-80 bg-muted/60 dark:bg-muted/30 rounded-[2rem] border-2 border-border/60 shadow-sm p-5">
                   <QuickActionsSidebar />
                 </div>
               </motion.aside>
@@ -213,10 +218,63 @@ export default function DashboardPage() {
           </AnimatePresence>
         </div>
 
-        {/* Mobile: always shown, no toggle */}
-        <aside className="w-full lg:hidden">
-          <QuickActionsSidebar />
-        </aside>
+        {/* Mobile FAB */}
+        <button
+          onClick={() => setSheetOpen(true)}
+          className="lg:hidden fixed bottom-24 right-5 z-40 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+          aria-label="Für dich öffnen"
+        >
+          <Sparkles className="w-6 h-6" />
+          {hasIntervention && (
+            <span className="absolute top-1 right-1 w-3 h-3 rounded-full bg-red-500 border-2 border-background" />
+          )}
+        </button>
+
+        {/* Mobile Bottom Sheet */}
+        <AnimatePresence>
+          {sheetOpen && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                key="backdrop"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
+                onClick={() => setSheetOpen(false)}
+              />
+              {/* Sheet */}
+              <motion.div
+                key="sheet"
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', stiffness: 320, damping: 38 }}
+                className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-background rounded-t-[2rem] shadow-2xl max-h-[80vh] overflow-y-auto pb-safe"
+              >
+                {/* Handle */}
+                <div className="flex justify-center pt-3 pb-1">
+                  <div className="w-10 h-1 rounded-full bg-muted-foreground/30" />
+                </div>
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 py-3 border-b border-border/40">
+                  <span className="font-bold text-base">Für dich</span>
+                  <button
+                    onClick={() => setSheetOpen(false)}
+                    className="w-8 h-8 rounded-full bg-muted flex items-center justify-center hover:bg-accent transition-colors"
+                  >
+                    <X className="w-4 h-4 text-muted-foreground" />
+                  </button>
+                </div>
+                {/* Content */}
+                <div className="px-5 pt-4 pb-10">
+                  <QuickActionsSidebar />
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
 
       </div>
     </div>
