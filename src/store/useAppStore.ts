@@ -40,7 +40,7 @@ interface AppState {
   updateProfile: (updates: Partial<UserProfile>) => void;
   saveIntention: (intention: string) => void;
   saveIntentionResult: (result: 'done' | 'partial' | 'missed', comment?: string) => void;
-  markInterventionDone: () => void;
+  markInterventionDone: (note?: string) => void;
   incrementValueAnswer: (value: UserValue) => void;
   clearXPFeedback: () => void;
 }
@@ -246,10 +246,10 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   clearXPFeedback: () => set({ xpGained: 0, leveledUp: null }),
 
-  markInterventionDone: () => {
+  markInterventionDone: (note?: string) => {
     const { todayEntry, profile } = get();
     if (!todayEntry || todayEntry.intervention_done) return;
-    const updated: DailyEntry = { ...todayEntry, intervention_done: true };
+    const updated: DailyEntry = { ...todayEntry, intervention_done: true, intervention_note: note?.trim() || null };
     saveEntry(updated);
     const { updatedProfile, xpGained, leveledUp } = applyXP(profile, XP.INTERVENTION_DONE);
     saveProfile(updatedProfile);

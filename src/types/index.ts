@@ -41,6 +41,7 @@ export interface DailyEntry {
   intention_comment: string | null;
   // Sprint 4: Micro-Interventions
   intervention_done: boolean;
+  intervention_note: string | null;   // optional note written during intervention
   created_at: string;
 }
 

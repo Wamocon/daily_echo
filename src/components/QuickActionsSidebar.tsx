@@ -294,6 +294,7 @@ type WidgetId = 'pomodoro' | 'breathe' | 'lofi' | null;
 
 export function QuickActionsSidebar() {
   const { todayEntry, markInterventionDone } = useAppStore();
+  const [interventionNote, setInterventionNote] = useState('');
   const [activeWidget, setActiveWidget] = useState<WidgetId>(null);
   const [mounted, setMounted] = useState(false);
   // Lifted running states — persist when widget is hidden
@@ -362,8 +363,16 @@ export function QuickActionsSidebar() {
                     <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{intervention.description}</p>
                   </div>
                 </div>
+                {/* Optional note textarea */}
+                <textarea
+                  value={interventionNote}
+                  onChange={(e) => setInterventionNote(e.target.value)}
+                  placeholder="Deine Notiz (optional) — z.B. zwei Sätze…"
+                  rows={3}
+                  className="w-full mt-1 mb-3 bg-white/60 dark:bg-black/20 border border-violet-200 dark:border-violet-700/50 rounded-xl px-3 py-2 text-xs placeholder:text-muted-foreground/60 resize-none focus:outline-none focus:ring-2 focus:ring-violet-400/50"
+                />
                 <button
-                  onClick={() => markInterventionDone()}
+                  onClick={() => { markInterventionDone(interventionNote); setInterventionNote(''); }}
                   className="w-full flex items-center justify-center gap-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-medium py-2.5 rounded-xl transition-all"
                 >
                   <CheckCheck className="w-4 h-4" />

@@ -86,6 +86,7 @@ export function createEmptyEntry(date: string): DailyEntry {
     intention_result: null,
     intention_comment: null,
     intervention_done: false,
+    intervention_note: null,
     created_at: new Date().toISOString(),
   };
 }
