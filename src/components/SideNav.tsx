@@ -61,6 +61,13 @@ export function SideNav() {
     .join('')
     .toUpperCase();
 
+  // Avatar ring color based on level
+  const avatarRingClass =
+    currentLevel >= 10 ? 'ring-2 ring-offset-2 ring-offset-background ring-rose-400 shadow-[0_0_12px_rgba(251,113,133,0.5)]' :
+    currentLevel >= 7  ? 'ring-2 ring-offset-2 ring-offset-background ring-amber-400 shadow-[0_0_12px_rgba(251,191,36,0.5)]' :
+    currentLevel >= 4  ? 'ring-2 ring-offset-2 ring-offset-background ring-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.4)]' :
+                         'ring-2 ring-offset-2 ring-offset-background ring-purple-400';
+
   const handleLogout = () => {
     logout();
     router.push('/login');
@@ -131,16 +138,19 @@ export function SideNav() {
         <div className="px-3 py-3 rounded-2xl bg-accent/50 flex flex-col gap-3">
           {/* Avatar + name row */}
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shrink-0 shadow-md text-white font-bold text-sm">
+            <div className={`w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center shrink-0 text-white font-bold text-sm ${avatarRingClass}`}>
               {initials}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold truncate leading-tight">{currentUser.name}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
                 <span className="text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/40 px-2 py-0.5 rounded-full whitespace-nowrap">
                   Lv. {currentLevel}
                 </span>
-                <span className="text-[10px] text-muted-foreground truncate">{currentTitle}</span>
+                <span className="text-[11px] font-bold text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/40 px-2 py-0.5 rounded-full whitespace-nowrap">
+                  🔥 {profile.streak ?? 0}
+                </span>
+                <span className="text-[10px] text-muted-foreground w-full">{currentTitle}</span>
               </div>
             </div>
           </div>

@@ -5,7 +5,8 @@ import { getAllEntries } from '@/lib/storage';
 import { DailyEntry } from '@/types';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
-import { Calendar as CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Flame } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
 
 const MOOD_COLOR: Record<number, string> = {
   1: 'bg-red-400 dark:bg-red-500',
@@ -31,6 +32,7 @@ function getDaysInMonth(year: number, month: number): Date[] {
 
 export function DashboardCalendar() {
   const today = new Date();
+  const { profile } = useAppStore();
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
   const [entries, setEntries] = useState<Record<string, DailyEntry>>({});
@@ -57,6 +59,16 @@ export function DashboardCalendar() {
 
   return (
     <div className="flex flex-col h-full">
+      {/* Streak header */}
+      <div className="flex items-center justify-between mb-3 pb-3 border-b border-border/40">
+        <div className="flex items-center gap-2">
+          <Flame className="w-5 h-5 text-orange-500 shrink-0" />
+          <span className="text-2xl font-bold leading-none">{profile.streak}</span>
+          <span className="text-xs text-muted-foreground">Tage am Stück</span>
+        </div>
+        <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-lg">Längster: {profile.longest_streak}</span>
+      </div>
+
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">

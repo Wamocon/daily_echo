@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { getOnThisDay } from '@/lib/storage';
+import { getAllEntries } from '@/lib/storage';
 import { ResponsiveContainer, BarChart, Bar, Cell, XAxis, Tooltip, YAxis } from 'recharts';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
@@ -25,13 +25,10 @@ export function DashboardMoodChart() {
       return d.toISOString().split('T')[0];
     });
 
-    // Mock accessing history since getEntryByDate requires reading all data.
-    // For this context we'll construct it via getOnThisDay matching logic but for recent days.
-    const allStorage = typeof window !== 'undefined' ? localStorage.getItem('daily_echo_entries') : null;
-    const allEntries = allStorage ? JSON.parse(allStorage) : [];
-    
+    const allEntries = getAllEntries();
+
     return past14Days.map(dateStr => {
-      const entry = allEntries.find((e: any) => e.date === dateStr);
+      const entry = allEntries.find((e) => e.entry_date === dateStr);
       const moodValue = entry ? (entry.evening_mood || entry.morning_mood || 0) : 0;
       return {
         date: dateStr,

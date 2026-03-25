@@ -2,24 +2,26 @@
 
 import { useState } from 'react';
 import { useAppStore } from '@/store/useAppStore';
-import { StreakDisplay } from '@/components/StreakDisplay';
 import XPBar from '@/components/XPBar';
 import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen, Sparkles, X } from 'lucide-react';
+import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen, Sparkles, X, Zap, Plus } from 'lucide-react';
 import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
 import { DashboardMoodChart } from '@/components/DashboardMoodChart';
 import { DashboardCalendar } from '@/components/DashboardCalendar';
 import { motion, AnimatePresence } from 'framer-motion';
+import { addQuickWin } from '@/lib/storage';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 
 export default function DashboardPage() {
-  const { profile, todayEntry, isInitialized } = useAppStore();
+  const { profile, todayEntry, isInitialized, weeklyGoal, init } = useAppStore();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [qwInput, setQwInput] = useState('');
+  const [qwExpanded, setQwExpanded] = useState(false);
 
   const morningDone = todayEntry?.morning_done ?? false;
   const eveningDone = todayEntry?.evening_done ?? false;
@@ -104,13 +106,8 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* --- 2. Streak --- */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-3 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col items-center justify-center hover:border-primary/20 transition-all">
-          <StreakDisplay />
-        </div>
-
-        {/* --- 3+4. Fortschritt (kombiniert: XP + Tages-Goals) --- */}
-        <div className="col-span-1 md:col-span-6 lg:col-span-5 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-4 hover:border-primary/20 transition-all">
+        {/* --- 2. Fortschritt (XP + Tages-Goals + Quick Wins) --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-5 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-4 hover:border-primary/20 transition-all">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Fortschritt</h3>
 
           {/* XP Bar */}
@@ -179,6 +176,85 @@ export default function DashboardPage() {
                 </span>
               </motion.div>
             )}
+
+            {/* Quick Win Wochenziel */}
+            <div className="flex items-center gap-3 pt-2 border-t border-border/40">
+              <Zap className={`w-4 h-4 shrink-0 ${weeklyGoal.quickwins >= weeklyGoal.quickwinGoal ? 'text-amber-500' : 'text-muted-foreground/50'}`} />
+              <div className="flex-1 flex items-center gap-1">
+                {Array.from({ length: Math.max(weeklyGoal.quickwinGoal, 1) }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`flex-1 h-2 rounded-full transition-all ${
+                      i < weeklyGoal.quickwins
+                        ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]'
+                        : 'bg-muted'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs text-muted-foreground w-16 text-right">Quick Wins</span>
+              <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+                weeklyGoal.quickwins >= weeklyGoal.quickwinGoal
+                  ? 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/40'
+                  : 'text-muted-foreground bg-muted'
+              }`}>
+                {weeklyGoal.quickwins}/{weeklyGoal.quickwinGoal}
+              </span>
+            </div>
+
+            {/* Inline Quick Win erfassen */}
+            <AnimatePresence mode="wait">
+              {qwExpanded ? (
+                <motion.div
+                  key="qw-input"
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="flex gap-2"
+                >
+                  <input
+                    autoFocus
+                    value={qwInput}
+                    onChange={e => setQwInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter' && qwInput.trim()) {
+                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                        init();
+                        setQwInput('');
+                        setQwExpanded(false);
+                      }
+                      if (e.key === 'Escape') setQwExpanded(false);
+                    }}
+                    placeholder="Was hast du heute erreicht?"
+                    className="flex-1 text-xs bg-background border border-border rounded-xl px-3 py-2 focus:outline-none focus:ring-1 focus:ring-primary"
+                  />
+                  <button
+                    onClick={() => {
+                      if (qwInput.trim()) {
+                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                        init();
+                        setQwInput('');
+                      }
+                      setQwExpanded(false);
+                    }}
+                    className="text-xs bg-primary text-primary-foreground px-3 py-2 rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                  >
+                    ✓
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button
+                  key="qw-btn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  onClick={() => setQwExpanded(true)}
+                  className="flex items-center gap-2 text-xs text-muted-foreground hover:text-amber-500 transition-colors group self-start"
+                >
+                  <Plus className="w-3.5 h-3.5 group-hover:scale-125 transition-transform" />
+                  Quick Win erfassen
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         </div>
 
@@ -198,9 +274,9 @@ export default function DashboardPage() {
                 <Sun className={`w-6 h-6 ${morningDone ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`} />
               </div>
               <div>
-                <h3 className="text-base font-bold group-hover:text-primary transition-colors">Morgen</h3>
-                <p className="text-sm text-muted-foreground mt-0.5 font-medium">
-                  {morningDone ? 'Erledigt ✓' : 'Jetzt starten'}
+                <h3 className="text-base font-bold group-hover:text-primary transition-colors">MorningEcho</h3>
+                <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                  {morningDone ? 'Erledigt ✓' : 'Morgen-Reflexion'}
                 </p>
               </div>
             </button>
@@ -217,9 +293,9 @@ export default function DashboardPage() {
                 <Moon className={`w-6 h-6 ${eveningDone ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'}`} />
               </div>
               <div>
-                <h3 className="text-base font-bold group-hover:text-primary transition-colors">Abend</h3>
-                <p className="text-sm text-muted-foreground mt-0.5 font-medium">
-                  {eveningDone ? 'Erledigt ✓' : 'Jetzt starten'}
+                <h3 className="text-base font-bold group-hover:text-primary transition-colors">NightEcho</h3>
+                <p className="text-xs text-muted-foreground mt-0.5 font-medium">
+                  {eveningDone ? 'Erledigt ✓' : 'Abend-Reflexion'}
                 </p>
               </div>
             </button>
@@ -231,8 +307,8 @@ export default function DashboardPage() {
           <DashboardCalendar />
         </div>
 
-        {/* --- 6. Dashboard Chart Widget --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
+        {/* --- 5. Dashboard Chart Widget --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-12 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
           <DashboardMoodChart />
         </div>
 
