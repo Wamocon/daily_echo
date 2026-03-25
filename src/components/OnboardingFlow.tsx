@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { UserValue } from '@/types';
 
 const GOAL_OPTIONS = [
   { value: 'Klarheit & Fokus', emoji: '🎯', description: 'Klare Prioritäten setzen, fokussiert bleiben' },
@@ -17,20 +18,34 @@ const JOB_CHIPS = [
   'Management', 'Selbstständig', 'Gesundheitswesen', 'Anderes',
 ];
 
+const VALUE_OPTIONS: { value: UserValue; emoji: string }[] = [
+  { value: 'Familie', emoji: '👨\u200d👩\u200d👧' },
+  { value: 'Karriere', emoji: '💼' },
+  { value: 'Gesundheit', emoji: '🏃' },
+  { value: 'Kreativität', emoji: '🎨' },
+  { value: 'Freundschaft', emoji: '🤝' },
+  { value: 'Sinn', emoji: '🌟' },
+  { value: 'Wachstum', emoji: '🌱' },
+  { value: 'Ruhe', emoji: '🧘' },
+  { value: 'Abenteuer', emoji: '🗺️' },
+  { value: 'Finanzen', emoji: '💰' },
+];
+
 export interface OnboardingData {
   name: string;
   age: number;
   job: string;
   goal: string;
   weeklyQuickWinTarget: number;
+  values: UserValue[];
 }
 
 interface OnboardingFlowProps {
   onComplete: (data: OnboardingData) => void;
 }
 
-type Step = 'name' | 'age' | 'job' | 'goal' | 'quickwin' | 'done';
-const STEPS: Step[] = ['name', 'age', 'job', 'goal', 'quickwin', 'done'];
+type Step = 'name' | 'age' | 'job' | 'goal' | 'quickwin' | 'values' | 'done';
+const STEPS: Step[] = ['name', 'age', 'job', 'goal', 'quickwin', 'values', 'done'];
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [step, setStep] = useState<Step>('name');
@@ -39,6 +54,7 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const [job, setJob] = useState('');
   const [goal, setGoal] = useState('');
   const [weeklyTarget, setWeeklyTarget] = useState(2);
+  const [selectedValues, setSelectedValues] = useState<UserValue[]>([]);
   const [direction, setDirection] = useState(1);
 
   const currentIndex = STEPS.indexOf(step);
@@ -61,7 +77,18 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       job: job.trim(),
       goal,
       weeklyQuickWinTarget: weeklyTarget,
+      values: selectedValues,
     });
+  };
+
+  const toggleValue = (v: UserValue) => {
+    setSelectedValues((prev) =>
+      prev.includes(v)
+        ? prev.filter((x) => x !== v)
+        : prev.length < 3
+        ? [...prev, v]
+        : prev
+    );
   };
 
   const variants = {
@@ -305,7 +332,62 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 <Button variant="outline" onClick={() => goBack('goal')} className="w-12 shrink-0">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <Button onClick={() => { handleDone(); goNext('done'); }} className="flex-1">
+                <Button onClick={() => goNext('values')} className="flex-1">
+                  Weiter <ChevronRight className="ml-1 w-4 h-4" />
+                </Button>
+              </div>
+            </motion.div>
+          )}
+
+          {/* ── Values ── */}
+          {step === 'values' && (
+            <motion.div key="values" custom={direction} variants={variants}
+              initial="enter" animate="center" exit="exit"
+              transition={{ duration: 0.25 }}
+              className="flex flex-col gap-6">
+              <div>
+                <h1 className="text-2xl font-bold">Deine Werte 🧘</h1>
+                <p className="text-muted-foreground mt-1 text-sm">
+                  Wähle <strong>3 Werte</strong>, die dir am wichtigsten sind.
+                  Sie prägen deine persönlichen Check-in-Fragen.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {VALUE_OPTIONS.map((opt) => {
+                  const isSelected = selectedValues.includes(opt.value);
+                  const isDisabled = !isSelected && selectedValues.length >= 3;
+                  return (
+                    <button
+                      key={opt.value}
+                      onClick={() => toggleValue(opt.value)}
+                      disabled={isDisabled}
+                      className={`flex items-center gap-3 rounded-xl border p-3 text-left text-sm transition-all ${
+                        isSelected
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/30 font-semibold'
+                          : isDisabled
+                          ? 'border-border bg-muted/30 opacity-40 cursor-not-allowed'
+                          : 'border-border bg-card hover:border-primary/40'
+                      }`}
+                    >
+                      <span className="text-xl">{opt.emoji}</span>
+                      <span>{opt.value}</span>
+                      {isSelected && <span className="ml-auto text-primary text-xs">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-center text-muted-foreground">
+                {selectedValues.length}/3 gewählt
+              </p>
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => goBack('quickwin')} className="w-12 shrink-0">
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <Button
+                  onClick={() => { handleDone(); goNext('done'); }}
+                  disabled={selectedValues.length < 3}
+                  className="flex-1"
+                >
                   DailyEcho starten 🌀
                 </Button>
               </div>
