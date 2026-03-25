@@ -12,6 +12,7 @@ import { PenLine, Sun, Moon, Calendar, ChevronRight, CheckCircle2 } from 'lucide
 import { getOnThisDay } from '@/lib/storage';
 import { DailyEntry } from '@/types';
 import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
+import { DashboardMoodChart } from '@/components/DashboardMoodChart';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 
@@ -189,6 +190,11 @@ export default function DashboardPage() {
             <p className="text-xs text-muted-foreground/70 mt-1">Bleib dran, um deine Historie zu füllen!</p>
           </div>
         )}
+
+          {/* --- 6. NEU: Dashboard Chart Widget --- */}
+          <div className="col-span-1 md:col-span-12 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
+            <DashboardMoodChart />
+          </div>
 
         </div>
 

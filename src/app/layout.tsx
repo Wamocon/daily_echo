@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { DM_Sans, IBM_Plex_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const dmSans = DM_Sans({
   variable: "--font-sans",
@@ -31,7 +32,9 @@ export default function RootLayout({
     >
       <body className="min-h-full bg-background">
         <ThemeProvider>
-          {children}
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
         </ThemeProvider>
       </body>
     </html>
