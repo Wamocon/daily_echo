@@ -67,8 +67,8 @@ export function SideNav() {
     currentLevel >= 4  ? 'ring-2 ring-offset-2 ring-offset-background ring-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.4)]' :
                          'ring-2 ring-offset-2 ring-offset-background ring-purple-400';
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
