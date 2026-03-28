@@ -6,7 +6,7 @@ import XPBar from '@/components/XPBar';
 import LevelUpModal from '@/components/LevelUpModal';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
-import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen, Sparkles, X, Zap, Plus } from 'lucide-react';
+import { PenLine, Sun, Moon, ChevronRight, CheckCircle2, PanelRightClose, PanelRightOpen, Sparkles, X, Zap, Plus, HelpCircle } from 'lucide-react';
 import { QuickActionsSidebar } from '@/components/QuickActionsSidebar';
 import { DashboardMoodChart } from '@/components/DashboardMoodChart';
 import { DashboardCalendar } from '@/components/DashboardCalendar';
@@ -22,6 +22,16 @@ export default function DashboardPage() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [qwInput, setQwInput] = useState('');
   const [qwExpanded, setQwExpanded] = useState(false);
+  const [qwGuided, setQwGuided] = useState(false);
+  const [qwQuestionIdx, setQwQuestionIdx] = useState(0);
+
+  const QW_QUESTIONS = [
+    { q: 'Hast du heute eine Aufgabe abgeschlossen, die du schon länger vor dir hergeschoben hast?', icon: '📋' },
+    { q: 'Hast du heute jemandem geholfen oder etwas für andere getan?', icon: '🤝' },
+    { q: 'Hast du heute etwas Neues gelernt oder eine neue Idee gehabt?', icon: '💡' },
+    { q: 'Hast du heute etwas für deine Gesundheit, Energie oder dein Wohlbefinden getan?', icon: '💪' },
+    { q: 'Gab es heute einen Moment, auf den du stolz sein kannst – egal wie klein?', icon: '🌟' },
+  ];
 
   const morningDone = todayEntry?.morning_done ?? false;
   const eveningDone = todayEntry?.evening_done ?? false;
@@ -285,7 +295,56 @@ export default function DashboardPage() {
           {/* Quick Win — eigenständige Kachel */}
           <div className="rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 p-4">
             <AnimatePresence mode="wait">
-              {qwExpanded ? (
+              {/* Geführter Modus */}
+              {qwExpanded && qwGuided ? (
+                <motion.div key="qw-guided" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-amber-500" />
+                      <span className="text-sm font-semibold">Lass uns gemeinsam suchen</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">{qwQuestionIdx + 1} / {QW_QUESTIONS.length}</span>
+                      <button onClick={() => { setQwGuided(false); setQwExpanded(false); setQwQuestionIdx(0); }} className="text-muted-foreground hover:text-foreground">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="h-1 w-full bg-amber-100 dark:bg-amber-900/40 rounded-full overflow-hidden">
+                    <motion.div className="h-full bg-amber-400 rounded-full" animate={{ width: `${((qwQuestionIdx + 1) / QW_QUESTIONS.length) * 100}%` }} transition={{ duration: 0.3 }} />
+                  </div>
+                  <div className="rounded-xl bg-white dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 p-4">
+                    <span className="text-2xl block mb-2">{QW_QUESTIONS[qwQuestionIdx].icon}</span>
+                    <p className="text-sm font-medium leading-relaxed">{QW_QUESTIONS[qwQuestionIdx].q}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        const starters = ['Aufgabe endlich erledigt: ', 'Jemanden unterstützt: ', 'Neues gelernt: ', 'Für mich gesorgt: ', 'Kleiner Stolz-Moment: '];
+                        setQwInput(starters[qwQuestionIdx]);
+                        setQwGuided(false);
+                        setQwQuestionIdx(0);
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+                    >
+                      Ja, das war&apos;s! ✓
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (qwQuestionIdx < QW_QUESTIONS.length - 1) {
+                          setQwQuestionIdx(i => i + 1);
+                        } else {
+                          setQwGuided(false);
+                          setQwQuestionIdx(0);
+                        }
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                    >
+                      {qwQuestionIdx < QW_QUESTIONS.length - 1 ? 'Nächste →' : 'Selbst schreiben'}
+                    </button>
+                  </div>
+                </motion.div>
+              ) : qwExpanded ? (
                 <motion.div
                   key="qw-input"
                   initial={{ opacity: 0 }}
@@ -346,6 +405,14 @@ export default function DashboardPage() {
                       ✓
                     </button>
                   </div>
+                  {/* Geführter Modus Trigger */}
+                  <button
+                    onClick={() => { setQwGuided(true); setQwQuestionIdx(0); }}
+                    className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-center flex items-center justify-center gap-1 w-full pt-1"
+                  >
+                    <HelpCircle className="w-3 h-3" />
+                    Ich weiß nicht was ich erfassen soll – hilf mir
+                  </button>
                 </motion.div>
               ) : (
                 <motion.button
