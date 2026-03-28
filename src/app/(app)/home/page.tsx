@@ -309,9 +309,29 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* --- 2. Fortschritt (XP + Tages-Goals + Quick Wins) --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-4 hover:border-primary/20 transition-all">
+        {/* --- 2. Fortschritt (XP + Tages-Goals) --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col gap-5 hover:border-primary/20 transition-all">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Fortschritt</h3>
+
+          {/* Heute — 3 Status-Dots */}
+          <div className="flex items-center gap-3">
+            {([
+              { done: morningDone, icon: '🌅', label: 'Morgen' },
+              { done: weeklyGoal.quickwins > 0, icon: '⚡', label: 'Quick Win' },
+              { done: eveningDone, icon: '🌙', label: 'Abend' },
+            ] as const).map(({ done, icon, label }) => (
+              <div key={label} className="flex-1 flex flex-col items-center gap-1.5">
+                <div className={`w-11 h-11 rounded-xl flex items-center justify-center text-xl transition-all ${
+                  done
+                    ? 'bg-primary/10 border border-primary/20 shadow-sm'
+                    : 'bg-muted/60 border border-border/40'
+                }`}>
+                  <span className={done ? '' : 'opacity-30'}>{icon}</span>
+                </div>
+                <span className={`text-[10px] font-semibold ${done ? 'text-foreground' : 'text-muted-foreground/40'}`}>{label}</span>
+              </div>
+            ))}
+          </div>
 
           {/* XP Bar */}
           <div className="bg-accent/30 rounded-2xl p-4">
@@ -377,7 +397,7 @@ export default function DashboardPage() {
                 <div className="flex-1 h-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.6)]" />
                 <span className="text-xs text-muted-foreground w-16 text-right">Bonus</span>
                 <span className="text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded-full">
-                  +{15}
+                  +15 XP
                 </span>
               </motion.div>
             )}
@@ -406,8 +426,25 @@ export default function DashboardPage() {
                 {weeklyGoal.quickwins}/{weeklyGoal.quickwinGoal}
               </span>
             </div>
+          </div>
 
-            {/* Inline Quick Win erfassen — jetzt in Hero-Kachel */}
+          {/* Streak + Ziel — füllt restlichen Raum */}
+          <div className="mt-auto flex flex-col gap-3">
+            {(profile.streak ?? 0) > 0 && (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40">
+                <span className="text-base">🔥</span>
+                <span className="text-sm font-bold text-orange-700 dark:text-orange-300">{profile.streak} Tage am Stück</span>
+                {(profile.longest_streak ?? 0) > (profile.streak ?? 0) && (
+                  <span className="ml-auto text-[10px] text-muted-foreground">Rekord: {profile.longest_streak}</span>
+                )}
+              </div>
+            )}
+            {profile.onboarding_goal && (
+              <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/15">
+                <span className="text-sm shrink-0">🎯</span>
+                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{profile.onboarding_goal}</p>
+              </div>
+            )}
           </div>
         </div>
 
