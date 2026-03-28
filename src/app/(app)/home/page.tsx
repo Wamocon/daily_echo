@@ -18,7 +18,7 @@ const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4:
 export default function DashboardPage() {
   const { profile, todayEntry, isInitialized, weeklyGoal, init } = useAppStore();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [qwInput, setQwInput] = useState('');
   const [qwExpanded, setQwExpanded] = useState(false);
@@ -457,36 +457,6 @@ export default function DashboardPage() {
 
         </div>
 
-        {/* --- RIGHT SIDEBAR (collapsible, desktop only) --- */}
-        <div className="hidden lg:flex flex-col items-end shrink-0">
-          {/* Toggle header row */}
-          <div
-            className={`flex items-center gap-2 mb-3 cursor-pointer select-none group ${
-              sidebarOpen ? 'self-stretch justify-between' : 'justify-end'
-            }`}
-            onClick={() => setSidebarOpen(o => !o)}
-          >
-            {sidebarOpen && (
-              <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest pl-1">Für dich</span>
-            )}
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-card border border-border/40 shadow-sm group-hover:bg-accent group-hover:border-primary/30 transition-all">
-              {sidebarOpen
-                ? <PanelRightClose className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
-                : <PanelRightOpen className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />}
-            </div>
-          </div>
-
-          <motion.aside
-            animate={{ width: sidebarOpen ? 320 : 0, opacity: sidebarOpen ? 1 : 0 }}
-            transition={{ type: 'spring', stiffness: 300, damping: 35 }}
-            className="overflow-hidden flex-shrink-0"
-          >
-            <div className="w-80 bg-muted/60 dark:bg-muted/30 rounded-[2rem] border-2 border-border/60 shadow-sm p-5">
-              <QuickActionsSidebar />
-            </div>
-          </motion.aside>
-        </div>
-
         {/* Mobile FAB */}
         <button
           onClick={() => setSheetOpen(true)}
@@ -542,6 +512,35 @@ export default function DashboardPage() {
         </motion.div>
 
       </div>
+
+      {/* Desktop Fixed Right Panel — Tab Button */}
+      <motion.button
+        className="hidden lg:flex fixed top-[calc(50vh-2rem)] right-0 z-[41] w-9 h-16 rounded-l-xl bg-card border border-r-0 border-border/40 shadow-md items-center justify-center hover:bg-accent transition-colors"
+        animate={{ x: sidebarOpen ? -320 : 0 }}
+        initial={{ x: 0 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+        onClick={() => setSidebarOpen(o => !o)}
+        aria-label="Für dich öffnen"
+      >
+        {sidebarOpen
+          ? <PanelRightClose className="w-4 h-4 text-muted-foreground" />
+          : <PanelRightOpen className="w-4 h-4 text-muted-foreground" />}
+      </motion.button>
+
+      {/* Desktop Fixed Right Panel */}
+      <motion.aside
+        animate={{ x: sidebarOpen ? 0 : 320 }}
+        initial={{ x: 320 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 35 }}
+        className="hidden lg:flex fixed right-0 top-20 h-[calc(100vh-5rem)] w-80 z-40 flex-col bg-card border-l border-border/60 shadow-xl"
+      >
+        <div className="flex items-center px-5 py-5 border-b border-border/40 shrink-0">
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Für dich</span>
+        </div>
+        <div className="flex-1 overflow-y-auto px-5 py-4">
+          <QuickActionsSidebar />
+        </div>
+      </motion.aside>
     </div>
   );
 }
