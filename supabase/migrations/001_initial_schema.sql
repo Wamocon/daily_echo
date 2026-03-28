@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   display_name TEXT,
+  role TEXT NOT NULL DEFAULT 'user',
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   streak INT DEFAULT 0 NOT NULL,
   longest_streak INT DEFAULT 0 NOT NULL,

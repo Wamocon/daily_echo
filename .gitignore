@@ -42,3 +42,4 @@ supabase_credentials.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.env*.local
