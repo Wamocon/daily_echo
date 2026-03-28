@@ -2,16 +2,26 @@
 
 import { create } from 'zustand';
 import { AuthUser } from '@/types';
-import { getCurrentUser, loginUser, loginByEmail, logoutUser, DemoAccount } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
+
+function mapSupabaseUser(user: User): AuthUser {
+  return {
+    id: user.id,
+    name: user.user_metadata?.display_name ?? user.email?.split('@')[0] ?? 'Nutzer',
+    role: user.user_metadata?.role ?? 'user',
+    created_at: user.created_at,
+  };
+}
 
 interface AuthState {
   currentUser: AuthUser | null;
   isAuthInitialized: boolean;
 
   initAuth: () => void;
-  login: (account: DemoAccount) => void;
-  loginWithEmail: (email: string) => AuthUser | null;
-  logout: () => void;
+  logout: () => Promise<void>;
+  // Kept for backward compatibility (admin page)
+  login: (account: { id: string; name: string; role: 'admin' | 'user' | 'guest' }) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -19,23 +29,24 @@ export const useAuthStore = create<AuthState>((set) => ({
   isAuthInitialized: false,
 
   initAuth: () => {
-    const user = getCurrentUser();
-    set({ currentUser: user, isAuthInitialized: true });
+    const supabase = createClient();
+
+    // Subscribe to auth state changes (handles session restore + sign-in/out)
+    supabase.auth.onAuthStateChange((_event, session) => {
+      const user = session?.user ?? null;
+      set({
+        currentUser: user ? mapSupabaseUser(user) : null,
+        isAuthInitialized: true,
+      });
+    });
   },
 
-  login: (account) => {
-    const user = loginUser(account);
-    set({ currentUser: user });
-  },
-
-  loginWithEmail: (email) => {
-    const user = loginByEmail(email);
-    if (user) set({ currentUser: user });
-    return user;
-  },
-
-  logout: () => {
-    logoutUser();
+  logout: async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
     set({ currentUser: null });
   },
+
+  // No-op kept for admin page compatibility
+  login: () => {},
 }));

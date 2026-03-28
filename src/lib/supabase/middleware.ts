@@ -28,7 +28,7 @@ export async function updateSession(request: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   // Geschützte Routen: Redirect zu /login wenn nicht eingeloggt
-  const protectedPaths = ['/', '/checkin', '/achievements', '/history'];
+  const protectedPaths = ['/home', '/checkin', '/achievements', '/history', '/quickwins', '/notifications', '/profile', '/help', '/admin'];
   const isProtected = protectedPaths.some(
     (path) => request.nextUrl.pathname === path || request.nextUrl.pathname.startsWith(path + '/')
   );
@@ -44,7 +44,7 @@ export async function updateSession(request: NextRequest) {
   const isAuthPage = authPaths.includes(request.nextUrl.pathname);
   if (isAuthPage && user) {
     const url = request.nextUrl.clone();
-    url.pathname = '/';
+    url.pathname = '/home';
     return NextResponse.redirect(url);
   }
 

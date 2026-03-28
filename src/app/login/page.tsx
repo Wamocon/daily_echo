@@ -2,31 +2,34 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { loginWithEmail } = useAuthStore();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!email.trim()) {
-      setError('Bitte E-Mail eingeben.');
+    if (!email.trim() || !password) {
+      setError('Bitte E-Mail und Passwort eingeben.');
       return;
     }
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 400));
-    const user = loginWithEmail(email.trim());
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
     setLoading(false);
-    if (!user) {
-      setError('Kein Konto mit dieser E-Mail gefunden. Bitte zuerst registrieren.');
+    if (authError) {
+      setError('E-Mail oder Passwort falsch.');
       return;
     }
     router.push('/home');
@@ -61,6 +64,17 @@ export default function LoginPage() {
                 placeholder="du@beispiel.de"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+                required
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-medium text-muted-foreground">Passwort</label>
+              <input
+                type="password"
+                placeholder="Dein Passwort"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full rounded-xl border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
                 required
               />

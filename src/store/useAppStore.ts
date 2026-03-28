@@ -9,6 +9,48 @@ import {
 import { calculateStreak, todayISO } from '@/lib/streaks';
 import { checkAchievements } from '@/lib/achievements';
 import { XP, calculateLevel } from '@/lib/xp';
+import { createClient } from '@/lib/supabase/client';
+
+// ─── Supabase sync helpers ────────────────────────────────────────────────────
+
+function syncProfileToSupabase(userId: string, profile: UserProfile) {
+  const supabase = createClient();
+  supabase.from('profiles').upsert({
+    id: userId,
+    display_name: profile.display_name,
+    streak: profile.streak,
+    longest_streak: profile.longest_streak,
+    freeze_used_this_week: profile.freeze_used_this_week,
+    last_checkin_date: profile.last_checkin_date,
+    total_checkins: profile.total_checkins,
+    total_quickwins: profile.total_quickwins,
+  }).then();
+}
+
+function syncEntryToSupabase(userId: string, entry: DailyEntry) {
+  const supabase = createClient();
+  supabase.from('daily_entries').upsert({
+    user_id: userId,
+    entry_date: entry.entry_date,
+    morning_done: entry.morning_done,
+    evening_done: entry.evening_done,
+    morning_mood: entry.morning_mood,
+    evening_mood: entry.evening_mood,
+    morning_answers: entry.morning_answers,
+    evening_answers: entry.evening_answers,
+    has_quickwin: entry.has_quickwin,
+    quickwin_text: entry.quickwin_text,
+  }, { onConflict: 'user_id,entry_date' }).then();
+}
+
+function syncAchievementsToSupabase(userId: string, ids: AchievementId[]) {
+  if (!ids.length) return;
+  const supabase = createClient();
+  supabase.from('user_achievements').upsert(
+    ids.map(id => ({ user_id: userId, achievement_id: id })),
+    { onConflict: 'user_id,achievement_id' }
+  ).then();
+}
 
 interface OnboardingData {
   name: string;
@@ -28,8 +70,10 @@ interface AppState {
   isInitialized: boolean;
   xpGained: number;
   leveledUp: number | null;
+  userId: string | null;
 
   init: () => void;
+  initWithUser: (userId: string) => Promise<void>;
   saveMood: (mood: Mood, context: CheckinContext) => void;
   saveAnswers: (answers: string[], context: CheckinContext) => void;
   saveQuickWin: (text: string) => void;
@@ -54,6 +98,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   isInitialized: false,
   xpGained: 0,
   leveledUp: null,
+  userId: null,
 
   init: () => {
     const profile = getProfile();
@@ -67,6 +112,70 @@ export const useAppStore = create<AppState>((set, get) => ({
       quickwinGoal: profile.weekly_quickwin_target ?? 2,
     };
     set({ profile, todayEntry: entry, unlockedAchievements: unlockedIds, weeklyGoal, isInitialized: true });
+  },
+
+  initWithUser: async (userId: string) => {
+    set({ userId });
+    const supabase = createClient();
+
+    // 1. Load profile from Supabase (source of truth for stats)
+    const { data: dbProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (dbProfile) {
+      const localProfile = getProfile();
+      const merged: UserProfile = {
+        ...localProfile,
+        id: userId,
+        display_name: dbProfile.display_name ?? localProfile.display_name,
+        streak: dbProfile.streak,
+        longest_streak: dbProfile.longest_streak,
+        freeze_used_this_week: dbProfile.freeze_used_this_week,
+        last_checkin_date: dbProfile.last_checkin_date,
+        total_checkins: dbProfile.total_checkins,
+        total_quickwins: dbProfile.total_quickwins,
+      };
+      saveProfile(merged);
+      set({ profile: merged });
+    } else {
+      const localProfile = getProfile();
+      const updated = { ...localProfile, id: userId };
+      saveProfile(updated);
+      set({ profile: updated });
+    }
+
+    // 2. Load today's entry from Supabase
+    const today = todayISO();
+    const { data: dbEntry } = await supabase
+      .from('daily_entries')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('entry_date', today)
+      .single();
+
+    if (dbEntry) {
+      const localEntry = getEntryByDate(today) ?? createEmptyEntry(today);
+      const merged: DailyEntry = { ...localEntry, ...dbEntry };
+      saveEntry(merged);
+      set({ todayEntry: merged });
+    }
+
+    // 3. Load achievements from Supabase
+    const { data: dbAchievements } = await supabase
+      .from('user_achievements')
+      .select('achievement_id')
+      .eq('user_id', userId);
+
+    if (dbAchievements && dbAchievements.length > 0) {
+      const ids = dbAchievements.map(a => a.achievement_id as AchievementId);
+      const localIds = getUnlockedIds();
+      const merged = [...new Set([...localIds, ...ids])];
+      merged.forEach(id => unlockAchievement(id));
+      set({ unlockedAchievements: merged });
+    }
   },
 
   saveMood: (mood, context) => {
@@ -113,6 +222,11 @@ export const useAppStore = create<AppState>((set, get) => ({
         quickwins: getWeeklyQuickWins(),
       },
     });
+    const { userId } = get();
+    if (userId) {
+      syncEntryToSupabase(userId, updated);
+      syncProfileToSupabase(userId, updatedProfile);
+    }
   },
 
   completeCheckin: (context, usedPromptLibrary = false, perspectiveCompleted = false) => {
@@ -161,6 +275,12 @@ export const useAppStore = create<AppState>((set, get) => ({
       xpGained,
       leveledUp,
     });
+    const { userId: uid } = get();
+    if (uid) {
+      syncEntryToSupabase(uid, updated);
+      syncProfileToSupabase(uid, updatedProfile);
+      syncAchievementsToSupabase(uid, newAchievements);
+    }
   },
 
   useStreakFreeze: () => {
@@ -197,6 +317,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       unlockedAchievements: allUnlocked,
       newlyUnlocked: newAchievements,
     });
+    const { userId } = get();
+    if (userId) {
+      syncProfileToSupabase(userId, updated);
+      syncAchievementsToSupabase(userId, newAchievements);
+    }
   },
 
   updateProfile: (updates) => {

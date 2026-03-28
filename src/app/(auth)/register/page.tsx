@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/useAuthStore';
-import { registerUser } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { login } = useAuthStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -24,9 +22,19 @@ export default function RegisterPage() {
       return;
     }
     setLoading(true);
-    const user = registerUser(name.trim(), email.trim());
-    // Sync to auth store
-    login({ id: user.id, name: user.name, role: user.role, email: email.trim(), emoji: '🙋', tagline: '', permissions: ['check-in', 'history', 'achievements'] });
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        data: { display_name: name.trim() },
+      },
+    });
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
     router.push('/onboarding');
   };
 

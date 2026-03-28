@@ -1,5 +1,55 @@
 # DailyEcho — Build Plan v1
 
+---
+
+## 🚀 Go-Live Plan (Branch: `main`)
+
+> **Ziel:** DailyEcho von Mock-Auth + localStorage auf echte Supabase-Auth + DB-Sync heben und auf Vercel deployen.
+
+### Analyse der Blocker (Stand: 27. März 2026)
+
+| # | Blocker | Details |
+|---|---------|---------|
+| B1 | Kein `.env.local` | Supabase-Credentials nicht konfiguriert — App würde im Build crashen |
+| B2 | Mock-Auth | `lib/auth.ts` nutzt `DEMO_ACCOUNTS` + PIN statt Supabase Auth |
+| B3 | Kein DB-Sync | `useAppStore` / `useAuthStore` schreibt nur in localStorage, kein Supabase-Sync |
+| B4 | Schema nicht deployed | `001_initial_schema.sql` existiert, aber ist noch nicht ins Live-Projekt gepusht |
+| B5 | Kein Vercel-Projekt | Frontend noch nicht verknüpft |
+
+---
+
+### Phase A — Supabase Backend aufsetzen
+- [ ] A1: `.env.local` anlegen mit `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- [ ] A2: Schema in Supabase Live-Projekt deployen (SQL aus `001_initial_schema.sql` in Supabase SQL-Editor ausführen)
+- [ ] A3: Supabase Auth — E-Mail/Passwort aktivieren (Dashboard → Auth → Providers)
+- [ ] A4: Supabase Auth — E-Mail-Bestätigung für MVP deaktivieren (einfacheres Onboarding)
+
+### Phase B — Auth ersetzen (Mock → Supabase)
+- [ ] B1: `lib/auth.ts` — Supabase-basierte Funktionen (signUp, signIn, signOut, getSession)
+- [ ] B2: `store/useAuthStore.ts` — Supabase `onAuthStateChange` + Session-Hydration
+- [ ] B3: Login-Seite (`app/login/page.tsx`) — E-Mail + Passwort Formular mit Supabase
+- [ ] B4: Register-Seite (`app/(auth)/register/page.tsx`) — Supabase signUp + Profil-Anlage
+- [ ] B5: `components/AuthGuard.tsx` — Supabase Session prüfen statt localStorage-Mock
+
+### Phase C — Daten-Sync (localStorage → Supabase DB)
+- [ ] C1: `store/useAppStore.ts` — Check-ins in `daily_entries` Tabelle schreiben/lesen
+- [ ] C2: `store/useAppStore.ts` — Profil-Daten (Streak, XP, Achievements) aus `profiles` Tabelle
+- [ ] C3: `store/useAppStore.ts` — Achievements in `user_achievements` Tabelle synchronisieren
+- [ ] C4: Fallback: localStorage als Cache behalten, Supabase als Source of Truth
+
+### Phase D — Build-Validierung
+- [ ] D1: `npm run build` — fehlerfrei durchlaufen
+- [ ] D2: Manueller E2E-Test: Registrierung → Onboarding → Check-in → Dashboard
+- [ ] D3: Auth-Flow testen: Login / Logout / Session-Persistenz nach Refresh
+
+### Phase E — Vercel Deployment
+- [ ] E1: Vercel-Projekt anlegen + GitHub `main` Branch verknüpfen
+- [ ] E2: Env-Variablen in Vercel setzen (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`)
+- [ ] E3: Supabase Redirect-URLs für Produktion konfigurieren (Auth → URL Configuration)
+- [ ] E4: Produktions-Deployment triggern + URL testen
+
+---
+
 ## Stack
 - **Framework:** Next.js 15 (App Router)
 - **Sprache:** TypeScript 5.x
