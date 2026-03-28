@@ -23,7 +23,7 @@ export default function RegisterPage() {
     }
     setLoading(true);
     const supabase = createClient();
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email: email.trim(),
       password,
       options: {
@@ -33,6 +33,11 @@ export default function RegisterPage() {
     setLoading(false);
     if (authError) {
       setError(authError.message);
+      return;
+    }
+    // Wenn session null ist, muss die E-Mail zuerst best\u00e4tigt werden
+    if (!data.session) {
+      setError('\u2709\ufe0f Bitte best\u00e4tige deine E-Mail-Adresse. Schau in dein Postfach und klicke den Aktivierungslink.');
       return;
     }
     router.push('/onboarding');

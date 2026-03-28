@@ -1,9 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, ChevronLeft, CheckCircle2, Minus, Plus } from 'lucide-react';
 import { UserValue } from '@/types';
 import { useAuthStore } from '@/store/useAuthStore';
 
@@ -53,6 +53,14 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
   const prefillName = currentUser?.name ?? '';
   const [step, setStep] = useState<Step>(prefillName ? 'age' : 'name');
   const [name, setName] = useState(prefillName);
+
+  // Race condition fix: auth is async — update as soon as user is available
+  useEffect(() => {
+    if (currentUser?.name && !name) {
+      setName(currentUser.name);
+      setStep('age');
+    }
+  }, [currentUser?.name]); // eslint-disable-line react-hooks/exhaustive-deps
   const [age, setAge] = useState('');
   const [job, setJob] = useState('');
   const [goal, setGoal] = useState('');
@@ -168,34 +176,49 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <div>
                 <h1 className="text-2xl font-bold">Hi {name}! 🎂</h1>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  In welchem Jahr bist du geboren? Das hilft uns, die Fragen besser auf dich zuzuschneiden.
+                  Wie alt bist du? Das hilft uns, die Fragen besser auf dich zuzuschneiden.
                 </p>
               </div>
-              <div className="grid grid-cols-5 gap-2 max-h-52 overflow-y-auto pr-1">
-                {Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 13 - i).map((year) => {
-                  const calcAge = new Date().getFullYear() - year;
-                  return (
-                    <button
-                      key={year}
-                      onClick={() => setAge(String(calcAge))}
-                      className={`rounded-xl py-2 text-sm font-medium border transition-all ${
-                        age === String(calcAge)
-                          ? 'bg-primary text-primary-foreground border-primary'
-                          : 'bg-card border-border hover:border-primary/50'
-                      }`}
-                    >
-                      {year}
-                    </button>
-                  );
-                })}
+
+              {/* Minimal Stepper */}
+              <div className="flex items-center justify-center gap-6">
+                <button
+                  onClick={() => setAge(a => a ? String(Math.max(13, parseInt(a) - 1)) : '25')}
+                  className="w-12 h-12 rounded-full border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center"
+                  aria-label="Weniger"
+                >
+                  <Minus className="w-4 h-4" />
+                </button>
+                <div className="text-center min-w-[80px]">
+                  <span className="text-5xl font-bold tabular-nums">{age || '—'}</span>
+                  {age && <p className="text-xs text-muted-foreground mt-1">Jahre</p>}
+                </div>
+                <button
+                  onClick={() => setAge(a => a ? String(Math.min(99, parseInt(a) + 1)) : '25')}
+                  className="w-12 h-12 rounded-full border border-border bg-card hover:bg-accent transition-colors flex items-center justify-center"
+                  aria-label="Mehr"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
               </div>
-              {age && (
-                <p className="text-sm text-center text-muted-foreground">
-                  Du bist <span className="font-bold text-foreground">{age} Jahre</span> alt.
-                </p>
-              )}
+
+              {/* Quick picks */}
+              <div className="flex gap-2 justify-center flex-wrap">
+                {['20', '25', '30', '35', '40', '45'].map(v => (
+                  <button
+                    key={v}
+                    onClick={() => setAge(v)}
+                    className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
+                      age === v ? 'bg-primary text-primary-foreground border-primary' : 'border-border hover:border-primary/50'
+                    }`}
+                  >
+                    {v}
+                  </button>
+                ))}
+              </div>
+
               <div className="flex gap-3">
-                {!prefillName && (
+                {!currentUser?.name && (
                   <Button variant="outline" onClick={() => goBack('name')} className="w-12 shrink-0">
                     <ChevronLeft className="w-4 h-4" />
                   </Button>
