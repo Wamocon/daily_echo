@@ -209,7 +209,7 @@ export default function DashboardPage() {
         </div>
 
         {/* --- 5. Rhythmus-Kachel: MorningEcho/NightEcho + Intention + Quick Win --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-5">
+        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col gap-5">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Rhythmus</h3>
 
           {/* Check-in Buttons */}
@@ -222,11 +222,14 @@ export default function DashboardPage() {
                   : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
               }`}
             >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all ${morningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-yellow-100 dark:bg-yellow-900/40 group-hover:scale-110'}`}>
-                <Sun className={`w-6 h-6 ${morningDone ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`} />
+              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all text-xl ${morningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-yellow-100 dark:bg-yellow-900/40 group-hover:scale-110'}`}>
+                {morningDone && todayEntry?.morning_mood
+                  ? MOOD_EMOJI[todayEntry.morning_mood]
+                  : <Sun className={`w-6 h-6 ${morningDone ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`} />
+                }
               </div>
-              <div>
-                <h3 className="text-base font-bold group-hover:text-primary transition-colors">MorningEcho</h3>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold">MorningEcho</h3>
                 <p className="text-xs text-muted-foreground mt-0.5 font-medium">
                   {morningDone ? 'Erledigt ✓' : 'Morgen-Reflexion'}
                 </p>
@@ -238,18 +241,25 @@ export default function DashboardPage() {
               className={`rounded-2xl p-5 border flex items-center gap-4 transition-all text-left group ${
                 eveningDone
                   ? 'bg-green-50/50 dark:bg-green-950/20 border-border/40 cursor-default'
-                  : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
+                  : morningDone
+                    ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-200/50 dark:border-indigo-800/40 hover:border-indigo-400/60 cursor-pointer shadow-sm hover:shadow-md'
+                    : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
               }`}
             >
               <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all ${eveningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-indigo-100 dark:bg-indigo-900/40 group-hover:scale-110'}`}>
                 <Moon className={`w-6 h-6 ${eveningDone ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'}`} />
               </div>
-              <div>
-                <h3 className="text-base font-bold group-hover:text-primary transition-colors">NightEcho</h3>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-base font-bold">NightEcho</h3>
                 <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-                  {eveningDone ? 'Erledigt ✓' : 'Abend-Reflexion'}
+                  {eveningDone ? 'Erledigt ✓' : morningDone ? 'Jetzt starten →' : 'Abend-Reflexion'}
                 </p>
               </div>
+              {morningDone && !eveningDone && (
+                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-1 rounded-full shrink-0">
+                  Bereit
+                </span>
+              )}
             </button>
           </div>
 
@@ -266,23 +276,28 @@ export default function DashboardPage() {
                   onClick={() => router.push('/checkin?mode=evening')}
                   className="text-[10px] text-primary font-semibold whitespace-nowrap bg-primary/10 px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors shrink-0"
                 >
-                  Wie lief’s?
+                  Wie lief&apos;s?
                 </button>
               )}
             </div>
           )}
 
-          {/* Quick Win erfassen */}
-          <div className="border-t border-border/40 pt-4">
+          {/* Quick Win — eigenständige Kachel */}
+          <div className="rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 p-4">
             <AnimatePresence mode="wait">
               {qwExpanded ? (
                 <motion.div
                   key="qw-input"
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
                   className="flex flex-col gap-3"
                 >
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-semibold">Quick Win erfassen</span>
+                    <span className="ml-auto text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">+25 XP</span>
+                  </div>
                   {/* Schnellauswahl-Prompts */}
                   <div className="flex flex-wrap gap-2">
                     {[
@@ -294,7 +309,7 @@ export default function DashboardPage() {
                       <button
                         key={label}
                         onClick={() => setQwInput(prev => prev ? prev : prompt)}
-                        className="text-xs px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
+                        className="text-xs px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800 bg-white dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
                       >
                         {label}
                       </button>
@@ -315,7 +330,7 @@ export default function DashboardPage() {
                         if (e.key === 'Escape') setQwExpanded(false);
                       }}
                       placeholder="Beschreib deinen Erfolg kurz..."
-                      className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-amber-400"
                     />
                     <button
                       onClick={() => {
@@ -326,7 +341,7 @@ export default function DashboardPage() {
                         }
                         setQwExpanded(false);
                       }}
-                      className="text-sm bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                      className="text-sm bg-amber-500 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-amber-600 transition-colors"
                     >
                       ✓
                     </button>
@@ -338,16 +353,25 @@ export default function DashboardPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   onClick={() => setQwExpanded(true)}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-amber-500 transition-colors group w-full"
+                  className="w-full text-left"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
-                    <Plus className="w-4 h-4 text-amber-500" />
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <span className="text-sm font-semibold text-foreground">Quick Win erfassen</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">+25 XP</span>
                   </div>
-                  <div className="flex-1 text-left">
-                    <span className="font-medium">⚡ Quick Win erfassen</span>
-                    <span className="text-xs text-muted-foreground/60 ml-2">Was hast du heute erreicht?</span>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    Was hast du heute erreicht? Selbst kleine Erfolge zählen.
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    {['✅ Aufgabe', '🤝 Geholfen', '💪 Für mich gesorgt', '💡 Idee'].map(chip => (
+                      <span key={chip} className="text-[11px] px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 bg-white dark:bg-amber-950/40">
+                        {chip}
+                      </span>
+                    ))}
                   </div>
-                  <span className="text-[10px] text-muted-foreground/40 font-medium">+25 XP</span>
                 </motion.button>
               )}
             </AnimatePresence>
