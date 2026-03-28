@@ -29,7 +29,13 @@ export default function LoginPage() {
     });
     setLoading(false);
     if (authError) {
-      setError('E-Mail oder Passwort falsch.');
+      if (authError.message.toLowerCase().includes('email not confirmed')) {
+        setError('Bitte best\u00e4tige zuerst deine E-Mail-Adresse. Schau in dein Postfach.');
+      } else if (authError.message.toLowerCase().includes('invalid login credentials')) {
+        setError('E-Mail oder Passwort falsch.');
+      } else {
+        setError(authError.message);
+      }
       return;
     }
     router.push('/home');

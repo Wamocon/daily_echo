@@ -45,6 +45,9 @@ export function TopHeader() {
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold tracking-tight">{pageTitle}</h2>
+            {pathname === '/home' && profile?.onboarding_goal && (
+              <p className="text-xs text-primary/70 mt-1 font-medium">🎯 {profile.onboarding_goal}</p>
+            )}
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2 text-sm text-muted-foreground bg-accent/50 px-3 py-1.5 rounded-lg border border-border/50">

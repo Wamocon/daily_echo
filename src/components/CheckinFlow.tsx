@@ -164,8 +164,27 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
 
   void isLastCoreQuestion; // used for future styling
 
+  // Progress bar calculation
+  const STEP_ORDER: Step[] = ['mood', 'intention', 'mood-context', 'intention-result', 'questions', 'perspective', 'reframing', 'quickwin', 'done'];
+  const stepIndex = STEP_ORDER.indexOf(step);
+  const checkinProgress = step === 'done' ? 100 : step === 'questions'
+    ? Math.round(((STEP_ORDER.indexOf('questions') + (currentQuestion / Math.max(allQuestions.length, 1))) / (STEP_ORDER.length - 1)) * 100)
+    : Math.round((Math.max(stepIndex, 0) / (STEP_ORDER.length - 1)) * 100);
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-lg mx-auto px-4">
+      {/* Progress bar */}
+      {step !== 'done' && (
+        <div className="mb-2">
+          <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+            <motion.div
+              className="h-full bg-primary rounded-full"
+              animate={{ width: `${checkinProgress}%` }}
+              transition={{ duration: 0.4, ease: 'easeInOut' }}
+            />
+          </div>
+        </div>
+      )}
       <AnimatePresence mode="wait">
         {step === 'mood' && (
           <motion.div
@@ -209,7 +228,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               </div>
               <div>
                 <h2 className="text-lg font-semibold leading-tight">Deine Intention</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Was soll heute z�hlen?</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Was soll heute zählen?</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -230,7 +249,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               onClick={() => handleIntentionNext()}
               className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
             >
-              �berspringen
+              Überspringen
             </button>
           </motion.div>
         )}
@@ -259,9 +278,9 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             </div>
             <div className="flex flex-col gap-2">
               {([
-                { value: 'done', label: '? Geschafft!', desc: 'Ich habe es erreicht', cls: 'border-green-400 bg-green-50 dark:bg-green-950' },
-                { value: 'partial', label: '?? Teilweise', desc: 'Ich war auf dem Weg', cls: 'border-amber-400 bg-amber-50 dark:bg-amber-950' },
-                { value: 'missed', label: '? Nicht geklappt', desc: 'Heute nicht � morgen wieder', cls: 'border-red-300 bg-red-50 dark:bg-red-950' },
+                { value: 'done', label: '✅ Geschafft!', desc: 'Ich habe es erreicht', cls: 'border-green-400 bg-green-50 dark:bg-green-950' },
+                { value: 'partial', label: '🔶 Teilweise', desc: 'Ich war auf dem Weg', cls: 'border-amber-400 bg-amber-50 dark:bg-amber-950' },
+                { value: 'missed', label: '❌ Nicht geklappt', desc: 'Heute nicht – morgen wieder', cls: 'border-red-300 bg-red-50 dark:bg-red-950' },
               ] as const).map((opt) => (
                 <button
                   key={opt.value}
@@ -300,7 +319,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               onClick={() => setStep('questions')}
               className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
             >
-              �berspringen
+              Überspringen
             </button>
           </motion.div>
         )}
@@ -315,16 +334,16 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             className="flex flex-col gap-6"
           >
             <div className="text-center">
-              <h2 className="text-xl font-semibold">Danke, dass du ehrlich bist ??</h2>
+              <h2 className="text-xl font-semibold">Danke, dass du ehrlich bist 💙</h2>
               <p className="text-sm text-muted-foreground mt-2">
-                Wie lange f�hlst du dich schon so?
+                Wie lange fühlst du dich schon so?
               </p>
             </div>
             <div className="flex flex-col gap-3">
               {([
-                { value: 'just-today', label: 'Nur heute', emoji: '???', desc: 'Ein tempor�res Gef�hl' },
-                { value: 'few-days', label: 'Seit ein paar Tagen', emoji: '???', desc: 'Schon eine Weile merkbar' },
-                { value: 'a-while', label: 'Schon l�nger', emoji: '??', desc: 'H�lt sich hartn�ckig' },
+                { value: 'just-today', label: 'Nur heute', emoji: '🌤️', desc: 'Ein temporäres Gefühl' },
+                { value: 'few-days', label: 'Seit ein paar Tagen', emoji: '☁️', desc: 'Schon eine Weile merkbar' },
+                { value: 'a-while', label: 'Schon länger', emoji: '🌧️', desc: 'Hält sich hartnäckig' },
               ] as const).map((opt) => (
                 <button
                   key={opt.value}
@@ -349,8 +368,8 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-xl bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-4 text-sm text-blue-800 dark:text-blue-200"
               >
-                ?? Wenn sich das schon l�nger so anf�hlt � es kann helfen, mit jemandem zu sprechen.
-                DailyEcho begleitet dich, kann aber keine professionelle Unterst�tzung ersetzen.
+                💙 Wenn sich das schon länger so anfühlt – es kann helfen, mit jemandem zu sprechen.
+                DailyEcho begleitet dich, kann aber keine professionelle Unterstützung ersetzen.
               </motion.div>
             )}
             <Button onClick={handleMoodContextNext} disabled={!moodDuration} className="w-full">
@@ -374,18 +393,18 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               </div>
               <div>
                 <h2 className="text-lg font-semibold leading-tight">Ein Perspektivwechsel</h2>
-                <p className="text-xs text-muted-foreground mt-0.5">Self-Compassion �bung</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Self-Compassion Übung</p>
               </div>
             </div>
             <div className="rounded-xl bg-pink-50 dark:bg-pink-950 border border-pink-200 dark:border-pink-800 p-4">
               <p className="text-sm leading-relaxed text-pink-900 dark:text-pink-100">
-                Stell dir vor, dein bester Freund h�tte heute genau das erlebt, was du beschrieben hast.
-                <strong className="block mt-2">Was w�rdest du ihm sagen?</strong>
+                Stell dir vor, dein bester Freund hätte heute genau das erlebt, was du beschrieben hast.
+                <strong className="block mt-2">Was würdest du ihm sagen?</strong>
               </p>
             </div>
             <textarea
               className="w-full rounded-xl border bg-card p-4 text-sm resize-none min-h-[110px] focus:outline-none focus:ring-2 focus:ring-primary/50"
-              placeholder="Ich w�rde ihm sagen..."
+              placeholder="Ich würde ihm sagen..."
               value={perspectiveAnswer}
               onChange={(e) => setPerspectiveAnswer(e.target.value)}
             />
@@ -395,7 +414,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="rounded-xl bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 p-3 text-sm text-green-800 dark:text-green-200 text-center"
               >
-                ?? Das gilt auch f�r dich.
+                💙 Das gilt auch für dich.
               </motion.div>
             )}
             <Button onClick={handlePerspectiveNext} disabled={!perspectiveAnswer.trim()} className="w-full">
@@ -432,21 +451,21 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               <p className="text-sm leading-relaxed text-violet-900 dark:text-violet-100">
                 Gibt es eine andere Sichtweise auf das, was du heute beschrieben hast?
                 <span className="block mt-1 text-xs opacity-70">
-                  Nicht &quot;positiv denken&quot; � sondern ehrlich: Welcher andere Blickwinkel w�re m�glich?
+                  Nicht &quot;positiv denken&quot; – sondern ehrlich: Welcher andere Blickwinkel wäre möglich?
                 </span>
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               {[
-                'Das ist vor�bergehend',
-                'Ich bin st�rker als es sich anf�hlt',
+                'Das ist vorübergehend',
+                'Ich bin stärker als es sich anfühlt',
                 'Das lehrt mich etwas',
                 'Andere hatten das auch',
-                'Eigene Antwort�',
+                'Eigene Antwort…',
               ].map((chip) => (
                 <button
                   key={chip}
-                  onClick={() => setReframingAnswer(chip === 'Eigene Antwort�' ? '' : chip)}
+                  onClick={() => setReframingAnswer(chip === 'Eigene Antwort…' ? '' : chip)}
                   className={`px-3 py-1.5 rounded-full text-xs border transition-colors ${
                     reframingAnswer === chip
                       ? 'bg-violet-500 text-white border-violet-500'
@@ -464,14 +483,14 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               onChange={(e) => setReframingAnswer(e.target.value)}
             />
             <Button onClick={handleReframingNext} disabled={!reframingAnswer.trim()} className="w-full">
-              {context === 'evening' ? 'Weiter zum Quick Win' : 'Abschlie�en'}
+              {context === 'evening' ? 'Weiter zum Quick Win' : 'Abschließen'}
               <ChevronRight className="ml-1 w-4 h-4" />
             </Button>
             <button
               onClick={handleReframingNext}
               className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors"
             >
-              �berspringen
+              Überspringen
             </button>
           </motion.div>
         )}
@@ -496,7 +515,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
             </div>
             {currentQuestion >= coreQuestions.length && (
               <span className="text-[10px] text-primary font-medium uppercase tracking-wide text-center">
-                ?? Aus der Fragebibliothek
+                ✨ Aus der Fragebibliothek
               </span>
             )}
             <p className="text-base font-medium text-center mt-2">
@@ -512,7 +531,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 setAnswers(next);
               }}
             />
-            {/* "Weitere Frage" � erscheint nach letzter Pflichtfrage */}
+            {/* "Weitere Frage" – erscheint nach letzter Pflichtfrage */}
             {isLastQuestion && canAddMore && (
               <motion.button
                 initial={{ opacity: 0, y: 8 }}
@@ -532,14 +551,14 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               {!isLastQuestion ? (
                 <span className="flex items-center gap-1">Weiter <ChevronRight className="w-4 h-4" /></span>
               ) : (
-                'Abschlie�en'
+                'Abschließen'
               )}
             </Button>
             <button
               onClick={handleSkipQuestion}
               className="text-xs text-muted-foreground hover:text-foreground text-center transition-colors py-1"
             >
-              �berspringen
+              Überspringen
             </button>
           </motion.div>
         )}
@@ -590,7 +609,7 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
                 disabled={hasQuickWin === true && !quickWin.trim()}
                 className="w-full"
               >
-                Check-in abschlie�en
+                Check-in abschließen
               </Button>
             )}
           </motion.div>
@@ -617,8 +636,8 @@ export function CheckinFlow({ context, onComplete }: CheckinFlowProps) {
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
                 {context === 'morning'
-                  ? 'Du hast eine starke Grundlage f�r heute gelegt.'
-                  : 'Regelm��ige Reflexion macht einen echten Unterschied.'}
+                  ? 'Du hast eine starke Grundlage für heute gelegt.'
+                  : 'Regelmäßige Reflexion macht einen echten Unterschied.'}
               </p>
             </div>
             <div className="flex items-center gap-4">
