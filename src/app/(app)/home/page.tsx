@@ -84,16 +84,18 @@ export default function DashboardPage() {
         {/* BENTO GRID (Main Content) */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-5 w-full lg:flex-1">
 
-          {/* --- 1. Haupt-CTA (Hero) --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-7 bg-card rounded-[2rem] p-6 lg:p-8 shadow-sm border border-border/40 flex flex-col justify-center relative overflow-hidden group hover:border-primary/20 transition-all">
+          {/* --- 1. Hero + Echo-Status + Intention + Quick Win --- */}
+        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 lg:p-8 shadow-sm border border-border/40 flex flex-col gap-6 relative overflow-hidden group hover:border-primary/20 transition-all">
           <div className="absolute -right-12 -top-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-all duration-500 pointer-events-none" />
-          
-          <h2 className="text-xl font-bold mb-2 z-10">Tägliche Reflexion</h2>
-          <p className="text-sm text-muted-foreground mb-6 z-10 max-w-sm">
-            Nimm dir einen kurzen Moment für dich. Checke ein und sammle kleine Erfolge für deinen Tag.
-          </p>
-          
-          <div className="z-10 mt-auto">
+
+          {/* CTA-Bereich */}
+          <div className="z-10 flex flex-col gap-4">
+            <div>
+              <h2 className="text-xl font-bold mb-1">Tägliche Reflexion</h2>
+              <p className="text-sm text-muted-foreground max-w-sm">
+                Nimm dir einen kurzen Moment für dich. Checke ein und sammle kleine Erfolge für deinen Tag.
+              </p>
+            </div>
             {!allDone ? (
               <Button
                 size="lg"
@@ -114,10 +116,201 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+
+          {/* Echo-Status Pills */}
+          <div className="z-10 flex items-center gap-3 flex-wrap">
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
+              morningDone
+                ? 'bg-green-50/60 dark:bg-green-950/30 border-green-200/60 dark:border-green-800/40 text-green-700 dark:text-green-400'
+                : 'bg-muted/50 border-border/40 text-muted-foreground'
+            }`}>
+              <span className="text-base">
+                {morningDone && todayEntry?.morning_mood ? MOOD_EMOJI[todayEntry.morning_mood] : <Sun className="w-4 h-4 inline" />}
+              </span>
+              <span>MorningEcho</span>
+              {morningDone
+                ? <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full">✓</span>
+                : <span className="text-[10px] text-muted-foreground/60">offen</span>
+              }
+            </div>
+            <span className="text-muted-foreground/30 text-xs hidden sm:block">→</span>
+            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
+              eveningDone
+                ? 'bg-green-50/60 dark:bg-green-950/30 border-green-200/60 dark:border-green-800/40 text-green-700 dark:text-green-400'
+                : morningDone
+                  ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-200/50 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400'
+                  : 'bg-muted/50 border-border/40 text-muted-foreground'
+            }`}>
+              <Moon className="w-4 h-4" />
+              <span>NightEcho</span>
+              {eveningDone
+                ? <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full">✓</span>
+                : morningDone
+                  ? <span className="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-full">Bereit</span>
+                  : <span className="text-[10px] text-muted-foreground/60">offen</span>
+              }
+            </div>
+          </div>
+
+          {/* Intention — nur wenn vorhanden */}
+          {todayEntry?.morning_intention && (
+            <div className="z-10 rounded-2xl bg-primary/5 border border-primary/15 px-4 py-3 flex items-start gap-3">
+              <span className="text-base mt-0.5">🎯</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Deine heutige Intention</p>
+                <p className="text-sm text-foreground/90 line-clamp-2">{todayEntry.morning_intention}</p>
+              </div>
+              {!eveningDone && (
+                <button
+                  onClick={() => router.push('/checkin?mode=evening')}
+                  className="text-[10px] text-primary font-semibold whitespace-nowrap bg-primary/10 px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors shrink-0"
+                >
+                  Wie lief&apos;s?
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Quick Win */}
+          <div className="z-10 rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 p-4">
+            <AnimatePresence mode="wait">
+              {qwExpanded && qwGuided ? (
+                <motion.div key="qw-guided" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="w-4 h-4 text-amber-500" />
+                      <span className="text-sm font-semibold">Lass uns gemeinsam suchen</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-muted-foreground">{qwQuestionIdx + 1} / {QW_QUESTIONS.length}</span>
+                      <button onClick={() => { setQwGuided(false); setQwExpanded(false); setQwQuestionIdx(0); }} className="text-muted-foreground hover:text-foreground">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                  <div className="h-1 w-full bg-amber-100 dark:bg-amber-900/40 rounded-full overflow-hidden">
+                    <motion.div className="h-full bg-amber-400 rounded-full" animate={{ width: `${((qwQuestionIdx + 1) / QW_QUESTIONS.length) * 100}%` }} transition={{ duration: 0.3 }} />
+                  </div>
+                  <div className="rounded-xl bg-white dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 p-4">
+                    <span className="text-2xl block mb-2">{QW_QUESTIONS[qwQuestionIdx].icon}</span>
+                    <p className="text-sm font-medium leading-relaxed">{QW_QUESTIONS[qwQuestionIdx].q}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        const starters = ['Aufgabe endlich erledigt: ', 'Jemanden unterstützt: ', 'Neues gelernt: ', 'Für mich gesorgt: ', 'Kleiner Stolz-Moment: '];
+                        setQwInput(starters[qwQuestionIdx]);
+                        setQwGuided(false);
+                        setQwQuestionIdx(0);
+                      }}
+                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
+                    >
+                      Ja, das war&apos;s! ✓
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (qwQuestionIdx < QW_QUESTIONS.length - 1) {
+                          setQwQuestionIdx(i => i + 1);
+                        } else {
+                          setQwGuided(false);
+                          setQwQuestionIdx(0);
+                        }
+                      }}
+                      className="px-4 py-2.5 rounded-xl border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                    >
+                      {qwQuestionIdx < QW_QUESTIONS.length - 1 ? 'Nächste →' : 'Selbst schreiben'}
+                    </button>
+                  </div>
+                </motion.div>
+              ) : qwExpanded ? (
+                <motion.div key="qw-input" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="flex flex-col gap-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-4 h-4 text-amber-500" />
+                    <span className="text-sm font-semibold">Quick Win erfassen</span>
+                    <span className="ml-auto text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">+25 XP</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: '✅ Aufgabe erledigt', prompt: 'Aufgabe erfolgreich abgeschlossen: ' },
+                      { label: '🤝 Jemanden unterstützt', prompt: 'Jemanden unterstützt: ' },
+                      { label: '💪 Für mich gesorgt', prompt: 'Für mich gesorgt: ' },
+                      { label: '💡 Problem gelöst', prompt: 'Problem gelöst: ' },
+                    ].map(({ label, prompt }) => (
+                      <button
+                        key={label}
+                        onClick={() => setQwInput(prev => prev ? prev : prompt)}
+                        className="text-xs px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800 bg-white dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      autoFocus
+                      value={qwInput}
+                      onChange={e => setQwInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && qwInput.trim()) {
+                          addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                          init();
+                          setQwInput('');
+                          setQwExpanded(false);
+                        }
+                        if (e.key === 'Escape') setQwExpanded(false);
+                      }}
+                      placeholder="Beschreib deinen Erfolg kurz..."
+                      className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-amber-400"
+                    />
+                    <button
+                      onClick={() => {
+                        if (qwInput.trim()) {
+                          addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                          init();
+                          setQwInput('');
+                        }
+                        setQwExpanded(false);
+                      }}
+                      className="text-sm bg-amber-500 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-amber-600 transition-colors"
+                    >
+                      ✓
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => { setQwGuided(true); setQwQuestionIdx(0); }}
+                    className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-center flex items-center justify-center gap-1 w-full pt-1"
+                  >
+                    <HelpCircle className="w-3 h-3" />
+                    Ich weiß nicht was ich erfassen soll – hilf mir
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button key="qw-btn" initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setQwExpanded(true)} className="w-full text-left">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <Zap className="w-4 h-4 text-amber-500" />
+                      <span className="text-sm font-semibold text-foreground">Quick Win erfassen</span>
+                    </div>
+                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">+25 XP</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                    Was hast du heute erreicht? Selbst kleine Erfolge zählen.
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    {['✅ Aufgabe', '🤝 Geholfen', '💪 Für mich gesorgt', '💡 Idee'].map(chip => (
+                      <span key={chip} className="text-[11px] px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 bg-white dark:bg-amber-950/40">
+                        {chip}
+                      </span>
+                    ))}
+                  </div>
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
         {/* --- 2. Fortschritt (XP + Tages-Goals + Quick Wins) --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-5 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-4 hover:border-primary/20 transition-all">
+        <div className="col-span-1 md:col-span-12 lg:col-span-4 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col justify-center gap-4 hover:border-primary/20 transition-all">
           <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Fortschritt</h3>
 
           {/* XP Bar */}
@@ -214,234 +407,7 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Inline Quick Win erfassen — jetzt in Rhythmus-Kachel */}
-          </div>
-        </div>
-
-        {/* --- 5. Rhythmus-Kachel: MorningEcho/NightEcho + Intention + Quick Win --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 shadow-sm border border-border/40 flex flex-col gap-5">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Dein Rhythmus</h3>
-
-          {/* Check-in Buttons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <button
-              onClick={() => !morningDone && router.push('/checkin?mode=morning')}
-              className={`rounded-2xl p-5 border flex items-center gap-4 transition-all text-left group ${
-                morningDone
-                  ? 'bg-green-50/50 dark:bg-green-950/20 border-border/40 cursor-default'
-                  : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
-              }`}
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all text-xl ${morningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-yellow-100 dark:bg-yellow-900/40 group-hover:scale-110'}`}>
-                {morningDone && todayEntry?.morning_mood
-                  ? MOOD_EMOJI[todayEntry.morning_mood]
-                  : <Sun className={`w-6 h-6 ${morningDone ? 'text-green-600 dark:text-green-400' : 'text-yellow-600 dark:text-yellow-400'}`} />
-                }
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold">MorningEcho</h3>
-                <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-                  {morningDone ? 'Erledigt ✓' : 'Morgen-Reflexion'}
-                </p>
-              </div>
-            </button>
-
-            <button
-              onClick={() => !eveningDone && router.push('/checkin?mode=evening')}
-              className={`rounded-2xl p-5 border flex items-center gap-4 transition-all text-left group ${
-                eveningDone
-                  ? 'bg-green-50/50 dark:bg-green-950/20 border-border/40 cursor-default'
-                  : morningDone
-                    ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-200/50 dark:border-indigo-800/40 hover:border-indigo-400/60 cursor-pointer shadow-sm hover:shadow-md'
-                    : 'bg-background hover:bg-muted/50 border-border/40 hover:border-primary/40 cursor-pointer shadow-sm hover:shadow-md'
-              }`}
-            >
-              <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 transition-all ${eveningDone ? 'bg-green-100 dark:bg-green-900/50' : 'bg-indigo-100 dark:bg-indigo-900/40 group-hover:scale-110'}`}>
-                <Moon className={`w-6 h-6 ${eveningDone ? 'text-green-600 dark:text-green-400' : 'text-indigo-600 dark:text-indigo-400'}`} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-base font-bold">NightEcho</h3>
-                <p className="text-xs text-muted-foreground mt-0.5 font-medium">
-                  {eveningDone ? 'Erledigt ✓' : morningDone ? 'Jetzt starten →' : 'Abend-Reflexion'}
-                </p>
-              </div>
-              {morningDone && !eveningDone && (
-                <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-2 py-1 rounded-full shrink-0">
-                  Bereit
-                </span>
-              )}
-            </button>
-          </div>
-
-          {/* Heute Intention (falls vorhanden) */}
-          {todayEntry?.morning_intention && (
-            <div className="rounded-2xl bg-primary/5 border border-primary/15 px-4 py-3 flex items-start gap-3">
-              <span className="text-base mt-0.5">🎯</span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-0.5">Deine heutige Intention</p>
-                <p className="text-sm text-foreground/90 line-clamp-2">{todayEntry.morning_intention}</p>
-              </div>
-              {!eveningDone && (
-                <button
-                  onClick={() => router.push('/checkin?mode=evening')}
-                  className="text-[10px] text-primary font-semibold whitespace-nowrap bg-primary/10 px-2 py-1 rounded-lg hover:bg-primary/20 transition-colors shrink-0"
-                >
-                  Wie lief&apos;s?
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Quick Win — eigenständige Kachel */}
-          <div className="rounded-2xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-100 dark:border-amber-900/40 p-4">
-            <AnimatePresence mode="wait">
-              {/* Geführter Modus */}
-              {qwExpanded && qwGuided ? (
-                <motion.div key="qw-guided" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <HelpCircle className="w-4 h-4 text-amber-500" />
-                      <span className="text-sm font-semibold">Lass uns gemeinsam suchen</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground">{qwQuestionIdx + 1} / {QW_QUESTIONS.length}</span>
-                      <button onClick={() => { setQwGuided(false); setQwExpanded(false); setQwQuestionIdx(0); }} className="text-muted-foreground hover:text-foreground">
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                  <div className="h-1 w-full bg-amber-100 dark:bg-amber-900/40 rounded-full overflow-hidden">
-                    <motion.div className="h-full bg-amber-400 rounded-full" animate={{ width: `${((qwQuestionIdx + 1) / QW_QUESTIONS.length) * 100}%` }} transition={{ duration: 0.3 }} />
-                  </div>
-                  <div className="rounded-xl bg-white dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/60 p-4">
-                    <span className="text-2xl block mb-2">{QW_QUESTIONS[qwQuestionIdx].icon}</span>
-                    <p className="text-sm font-medium leading-relaxed">{QW_QUESTIONS[qwQuestionIdx].q}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => {
-                        const starters = ['Aufgabe endlich erledigt: ', 'Jemanden unterstützt: ', 'Neues gelernt: ', 'Für mich gesorgt: ', 'Kleiner Stolz-Moment: '];
-                        setQwInput(starters[qwQuestionIdx]);
-                        setQwGuided(false);
-                        setQwQuestionIdx(0);
-                      }}
-                      className="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition-colors"
-                    >
-                      Ja, das war&apos;s! ✓
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (qwQuestionIdx < QW_QUESTIONS.length - 1) {
-                          setQwQuestionIdx(i => i + 1);
-                        } else {
-                          setQwGuided(false);
-                          setQwQuestionIdx(0);
-                        }
-                      }}
-                      className="px-4 py-2.5 rounded-xl border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
-                    >
-                      {qwQuestionIdx < QW_QUESTIONS.length - 1 ? 'Nächste →' : 'Selbst schreiben'}
-                    </button>
-                  </div>
-                </motion.div>
-              ) : qwExpanded ? (
-                <motion.div
-                  key="qw-input"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="flex flex-col gap-3"
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-4 h-4 text-amber-500" />
-                    <span className="text-sm font-semibold">Quick Win erfassen</span>
-                    <span className="ml-auto text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">+25 XP</span>
-                  </div>
-                  {/* Schnellauswahl-Prompts */}
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { label: '✅ Aufgabe erledigt', prompt: 'Aufgabe erfolgreich abgeschlossen: ' },
-                      { label: '🤝 Jemanden unterstützt', prompt: 'Jemanden unterstützt: ' },
-                      { label: '💪 Für mich gesorgt', prompt: 'Für mich gesorgt: ' },
-                      { label: '💡 Problem gelöst', prompt: 'Problem gelöst: ' },
-                    ].map(({ label, prompt }) => (
-                      <button
-                        key={label}
-                        onClick={() => setQwInput(prev => prev ? prev : prompt)}
-                        className="text-xs px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800 bg-white dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="flex gap-2">
-                    <input
-                      autoFocus
-                      value={qwInput}
-                      onChange={e => setQwInput(e.target.value)}
-                      onKeyDown={e => {
-                        if (e.key === 'Enter' && qwInput.trim()) {
-                          addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
-                          init();
-                          setQwInput('');
-                          setQwExpanded(false);
-                        }
-                        if (e.key === 'Escape') setQwExpanded(false);
-                      }}
-                      placeholder="Beschreib deinen Erfolg kurz..."
-                      className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-amber-400"
-                    />
-                    <button
-                      onClick={() => {
-                        if (qwInput.trim()) {
-                          addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
-                          init();
-                          setQwInput('');
-                        }
-                        setQwExpanded(false);
-                      }}
-                      className="text-sm bg-amber-500 text-white px-4 py-2.5 rounded-xl font-medium hover:bg-amber-600 transition-colors"
-                    >
-                      ✓
-                    </button>
-                  </div>
-                  {/* Geführter Modus Trigger */}
-                  <button
-                    onClick={() => { setQwGuided(true); setQwQuestionIdx(0); }}
-                    className="text-xs text-muted-foreground hover:text-amber-600 dark:hover:text-amber-400 transition-colors text-center flex items-center justify-center gap-1 w-full pt-1"
-                  >
-                    <HelpCircle className="w-3 h-3" />
-                    Ich weiß nicht was ich erfassen soll – hilf mir
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.button
-                  key="qw-btn"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  onClick={() => setQwExpanded(true)}
-                  className="w-full text-left"
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      <Zap className="w-4 h-4 text-amber-500" />
-                      <span className="text-sm font-semibold text-foreground">Quick Win erfassen</span>
-                    </div>
-                    <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/50 px-2 py-0.5 rounded-full">+25 XP</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-3">
-                    Was hast du heute erreicht? Selbst kleine Erfolge zählen.
-                  </p>
-                  <div className="flex gap-2 flex-wrap">
-                    {['✅ Aufgabe', '🤝 Geholfen', '💪 Für mich gesorgt', '💡 Idee'].map(chip => (
-                      <span key={chip} className="text-[11px] px-2.5 py-1 rounded-full border border-amber-200 dark:border-amber-800 text-amber-600 dark:text-amber-400 bg-white dark:bg-amber-950/40">
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
-                </motion.button>
-              )}
-            </AnimatePresence>
+            {/* Inline Quick Win erfassen — jetzt in Hero-Kachel */}
           </div>
         </div>
 
