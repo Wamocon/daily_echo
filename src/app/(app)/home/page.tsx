@@ -417,7 +417,7 @@ export default function DashboardPage() {
         </div>
 
         {/* --- 5. Dashboard Chart Widget --- */}
-        <div className="col-span-1 md:col-span-12 lg:col-span-12 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
+        <div className="col-span-1 md:col-span-12 lg:col-span-8 bg-card rounded-[2rem] p-6 lg:p-7 shadow-sm border border-border/40 hover:border-primary/20 transition-all flex flex-col justify-center min-h-[300px]">
           <DashboardMoodChart />
         </div>
 
