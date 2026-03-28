@@ -163,7 +163,7 @@ export function SideNav() {
             <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${progressPercent}%` }}
+                animate={{ width: `${progressPercent * 100}%` }}
                 transition={{ duration: 0.8, ease: 'easeOut' }}
                 className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full"
               />

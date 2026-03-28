@@ -10,7 +10,6 @@ export interface Question {
 }
 
 export const MORNING_CORE: Question[] = [
-  { id: 'm1', text: 'Was ist deine Intention für heute?', context: 'morning', category: 'focus' },
   { id: 'm2', text: 'Was ist das Erste, worauf du dich heute freust?', context: 'morning', category: 'focus' },
   { id: 'm3', text: 'Was könnte heute herausfordernd werden – und wie gehst du damit um?', context: 'morning', category: 'growth' },
 ];

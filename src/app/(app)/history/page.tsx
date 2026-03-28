@@ -4,9 +4,10 @@ import { getAllEntries, getOnThisDay, getAllQuickWins, deleteQuickWin, addQuickW
 import { DailyEntry, QuickWin } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
-import { Calendar, Zap, Sun, Moon, Trash2, Trophy, ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { Calendar, Zap, Sun, Moon, Trash2, Trophy, ChevronLeft, ChevronRight, Plus, ChevronDown, ChevronUp } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { cn } from '@/lib/utils';
+import { MORNING_CORE, EVENING_CORE } from '@/lib/questions';
 
 const MOOD_EMOJI: Record<number, string> = { 1: '😔', 2: '😕', 3: '😐', 4: '🙂', 5: '😄' };
 
@@ -33,25 +34,86 @@ function getWeekLabel(week: string): string {
 function EntryCard({ entry }: { entry: DailyEntry }) {
   const date = new Date(entry.entry_date);
   const formatted = date.toLocaleDateString('de-DE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const [expanded, setExpanded] = useState(false);
+
+  const hasAnswers = (entry.morning_answers && entry.morning_answers.some(a => a?.trim())) ||
+                     (entry.evening_answers && entry.evening_answers.some(a => a?.trim()));
 
   return (
     <div className="bg-card rounded-2xl border p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between">
         <span className="text-xs text-muted-foreground">{formatted}</span>
-        <div className="flex gap-2 text-xs">
+        <div className="flex gap-2 text-xs items-center">
           {entry.morning_done && <span className="flex items-center gap-0.5"><Sun className="w-3 h-3 text-yellow-500" /> {entry.morning_mood ? MOOD_EMOJI[entry.morning_mood] : ''}</span>}
           {entry.evening_done && <span className="flex items-center gap-0.5"><Moon className="w-3 h-3 text-indigo-500" /> {entry.evening_mood ? MOOD_EMOJI[entry.evening_mood] : ''}</span>}
+          {hasAnswers && (
+            <button
+              onClick={() => setExpanded(e => !e)}
+              className="ml-1 text-muted-foreground hover:text-foreground transition-colors"
+              aria-label={expanded ? 'Einklappen' : 'Antworten anzeigen'}
+            >
+              {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+            </button>
+          )}
         </div>
       </div>
+
       {entry.has_quickwin && entry.quickwin_text && (
         <div className="flex items-start gap-2 bg-amber-50 dark:bg-amber-950 rounded-xl px-3 py-2">
           <Zap className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
           <p className="text-xs">{entry.quickwin_text}</p>
         </div>
       )}
-      {entry.evening_answers && (
-        <p className="text-xs text-muted-foreground line-clamp-2">{entry.evening_answers[2]}</p>
+
+      {entry.morning_intention && (
+        <div className="flex items-start gap-2 bg-primary/5 rounded-xl px-3 py-2">
+          <span className="text-xs mt-0.5">🎯</span>
+          <p className="text-xs text-muted-foreground"><span className="font-medium text-foreground/80">Intention: </span>{entry.morning_intention}</p>
+        </div>
       )}
+
+      <AnimatePresence>
+        {expanded && hasAnswers && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="flex flex-col gap-3 overflow-hidden"
+          >
+            {entry.morning_answers && entry.morning_answers.some(a => a?.trim()) && (
+              <div className="flex flex-col gap-1.5">
+                <p className="text-[10px] font-semibold text-yellow-600 dark:text-yellow-400 uppercase tracking-wider flex items-center gap-1">
+                  <Sun className="w-3 h-3" /> MorningEcho
+                </p>
+                {MORNING_CORE.map((q, i) =>
+                  entry.morning_answers?.[i]?.trim() ? (
+                    <div key={q.id} className="pl-2 border-l-2 border-yellow-200 dark:border-yellow-800">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">{q.text}</p>
+                      <p className="text-xs">{entry.morning_answers[i]}</p>
+                    </div>
+                  ) : null
+                )}
+              </div>
+            )}
+
+            {entry.evening_answers && entry.evening_answers.some(a => a?.trim()) && (
+              <div className="flex flex-col gap-1.5">
+                <p className="text-[10px] font-semibold text-indigo-500 dark:text-indigo-400 uppercase tracking-wider flex items-center gap-1">
+                  <Moon className="w-3 h-3" /> NightEcho
+                </p>
+                {EVENING_CORE.map((q, i) =>
+                  entry.evening_answers?.[i]?.trim() ? (
+                    <div key={q.id} className="pl-2 border-l-2 border-indigo-200 dark:border-indigo-800">
+                      <p className="text-[10px] text-muted-foreground mb-0.5">{q.text}</p>
+                      <p className="text-xs">{entry.evening_answers[i]}</p>
+                    </div>
+                  ) : null
+                )}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { ChevronRight, ChevronLeft, CheckCircle2 } from 'lucide-react';
 import { UserValue } from '@/types';
+import { useAuthStore } from '@/store/useAuthStore';
 
 const GOAL_OPTIONS = [
   { value: 'Klarheit & Fokus', emoji: '🎯', description: 'Klare Prioritäten setzen, fokussiert bleiben' },
@@ -48,8 +49,10 @@ type Step = 'name' | 'age' | 'job' | 'goal' | 'quickwin' | 'values' | 'done';
 const STEPS: Step[] = ['name', 'age', 'job', 'goal', 'quickwin', 'values', 'done'];
 
 export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
-  const [step, setStep] = useState<Step>('name');
-  const [name, setName] = useState('');
+  const { currentUser } = useAuthStore();
+  const prefillName = currentUser?.name ?? '';
+  const [step, setStep] = useState<Step>(prefillName ? 'age' : 'name');
+  const [name, setName] = useState(prefillName);
   const [age, setAge] = useState('');
   const [job, setJob] = useState('');
   const [goal, setGoal] = useState('');
@@ -165,27 +168,41 @@ export function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
               <div>
                 <h1 className="text-2xl font-bold">Hi {name}! 🎂</h1>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Wie alt bist du? Das hilft uns, die Fragen besser auf dich zuzuschneiden.
+                  In welchem Jahr bist du geboren? Das hilft uns, die Fragen besser auf dich zuzuschneiden.
                 </p>
               </div>
-              <input
-                type="number"
-                autoFocus
-                placeholder="z.B. 28"
-                min={13}
-                max={99}
-                value={age}
-                onChange={(e) => setAge(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && age && goNext('job')}
-                className="w-full rounded-xl border bg-card px-4 py-3 text-base focus:outline-none focus:ring-2 focus:ring-primary/50"
-              />
+              <div className="grid grid-cols-5 gap-2 max-h-52 overflow-y-auto pr-1">
+                {Array.from({ length: 70 }, (_, i) => new Date().getFullYear() - 13 - i).map((year) => {
+                  const calcAge = new Date().getFullYear() - year;
+                  return (
+                    <button
+                      key={year}
+                      onClick={() => setAge(String(calcAge))}
+                      className={`rounded-xl py-2 text-sm font-medium border transition-all ${
+                        age === String(calcAge)
+                          ? 'bg-primary text-primary-foreground border-primary'
+                          : 'bg-card border-border hover:border-primary/50'
+                      }`}
+                    >
+                      {year}
+                    </button>
+                  );
+                })}
+              </div>
+              {age && (
+                <p className="text-sm text-center text-muted-foreground">
+                  Du bist <span className="font-bold text-foreground">{age} Jahre</span> alt.
+                </p>
+              )}
               <div className="flex gap-3">
-                <Button variant="outline" onClick={() => goBack('name')} className="w-12 shrink-0">
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
+                {!prefillName && (
+                  <Button variant="outline" onClick={() => goBack('name')} className="w-12 shrink-0">
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button
                   onClick={() => goNext('job')}
-                  disabled={!age || parseInt(age) < 13 || parseInt(age) > 99}
+                  disabled={!age}
                   className="flex-1"
                 >
                   Weiter <ChevronRight className="ml-1 w-4 h-4" />

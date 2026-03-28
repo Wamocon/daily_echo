@@ -128,15 +128,16 @@ export default function DashboardPage() {
                 />
               </div>
               <span className="text-xs text-muted-foreground w-16 text-right">Morgen</span>
-              {morningDone && (
-                <motion.span
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40 px-1.5 py-0.5 rounded-full"
-                >
-                  +{20}
-                </motion.span>
-              )}
+              <motion.span
+                animate={morningDone ? { scale: 1, opacity: 1 } : { scale: 0.95, opacity: 0.4 }}
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
+                  morningDone
+                    ? 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/40'
+                    : 'text-muted-foreground bg-muted'
+                }`}
+              >
+                +20 XP
+              </motion.span>
             </div>
 
             {/* Abend Check-in */}
@@ -150,15 +151,16 @@ export default function DashboardPage() {
                 />
               </div>
               <span className="text-xs text-muted-foreground w-16 text-right">Abend</span>
-              {eveningDone && (
-                <motion.span
-                  initial={{ scale: 0, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40 px-1.5 py-0.5 rounded-full"
-                >
-                  +{20}
-                </motion.span>
-              )}
+              <motion.span
+                animate={eveningDone ? { scale: 1, opacity: 1 } : { scale: 0.95, opacity: 0.4 }}
+                className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
+                  eveningDone
+                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/40'
+                    : 'text-muted-foreground bg-muted'
+                }`}
+              >
+                +20 XP
+              </motion.span>
             </div>
 
             {/* Bonus: Beide am selben Tag */}
@@ -279,37 +281,56 @@ export default function DashboardPage() {
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="flex gap-2"
+                  className="flex flex-col gap-3"
                 >
-                  <input
-                    autoFocus
-                    value={qwInput}
-                    onChange={e => setQwInput(e.target.value)}
-                    onKeyDown={e => {
-                      if (e.key === 'Enter' && qwInput.trim()) {
-                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
-                        init();
-                        setQwInput('');
+                  {/* Schnellauswahl-Prompts */}
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: '✅ Aufgabe erledigt', prompt: 'Aufgabe erfolgreich abgeschlossen: ' },
+                      { label: '🤝 Jemanden unterstützt', prompt: 'Jemanden unterstützt: ' },
+                      { label: '💪 Für mich gesorgt', prompt: 'Für mich gesorgt: ' },
+                      { label: '💡 Problem gelöst', prompt: 'Problem gelöst: ' },
+                    ].map(({ label, prompt }) => (
+                      <button
+                        key={label}
+                        onClick={() => setQwInput(prev => prev ? prev : prompt)}
+                        className="text-xs px-3 py-1.5 rounded-full border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition-colors"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <input
+                      autoFocus
+                      value={qwInput}
+                      onChange={e => setQwInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter' && qwInput.trim()) {
+                          addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                          init();
+                          setQwInput('');
+                          setQwExpanded(false);
+                        }
+                        if (e.key === 'Escape') setQwExpanded(false);
+                      }}
+                      placeholder="Beschreib deinen Erfolg kurz..."
+                      className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <button
+                      onClick={() => {
+                        if (qwInput.trim()) {
+                          addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
+                          init();
+                          setQwInput('');
+                        }
                         setQwExpanded(false);
-                      }
-                      if (e.key === 'Escape') setQwExpanded(false);
-                    }}
-                    placeholder="Was hast du heute erreicht?"
-                    className="flex-1 text-sm bg-background border border-border rounded-xl px-3 py-2.5 focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                  <button
-                    onClick={() => {
-                      if (qwInput.trim()) {
-                        addQuickWin(qwInput.trim(), new Date().toISOString().split('T')[0]);
-                        init();
-                        setQwInput('');
-                      }
-                      setQwExpanded(false);
-                    }}
-                    className="text-sm bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium hover:bg-primary/90 transition-colors"
-                  >
-                    ✓
-                  </button>
+                      }}
+                      className="text-sm bg-primary text-primary-foreground px-4 py-2.5 rounded-xl font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      ✓
+                    </button>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.button
@@ -317,13 +338,16 @@ export default function DashboardPage() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   onClick={() => setQwExpanded(true)}
-                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-amber-500 transition-colors group"
+                  className="flex items-center gap-2 text-sm text-muted-foreground hover:text-amber-500 transition-colors group w-full"
                 >
                   <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                     <Plus className="w-4 h-4 text-amber-500" />
                   </div>
-                  <span className="font-medium">⚡ Quick Win erfassen</span>
-                  <span className="text-xs text-muted-foreground/60 ml-1">Was hast du heute erreicht?</span>
+                  <div className="flex-1 text-left">
+                    <span className="font-medium">⚡ Quick Win erfassen</span>
+                    <span className="text-xs text-muted-foreground/60 ml-2">Was hast du heute erreicht?</span>
+                  </div>
+                  <span className="text-[10px] text-muted-foreground/40 font-medium">+25 XP</span>
                 </motion.button>
               )}
             </AnimatePresence>
