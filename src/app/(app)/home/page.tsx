@@ -117,40 +117,7 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Echo-Status Pills */}
-          <div className="z-10 flex items-center gap-3 flex-wrap">
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
-              morningDone
-                ? 'bg-green-50/60 dark:bg-green-950/30 border-green-200/60 dark:border-green-800/40 text-green-700 dark:text-green-400'
-                : 'bg-muted/50 border-border/40 text-muted-foreground'
-            }`}>
-              <span className="text-base">
-                {morningDone && todayEntry?.morning_mood ? MOOD_EMOJI[todayEntry.morning_mood] : <Sun className="w-4 h-4 inline" />}
-              </span>
-              <span>MorningEcho</span>
-              {morningDone
-                ? <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full">✓</span>
-                : <span className="text-[10px] text-muted-foreground/60">offen</span>
-              }
-            </div>
-            <span className="text-muted-foreground/30 text-xs hidden sm:block">→</span>
-            <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
-              eveningDone
-                ? 'bg-green-50/60 dark:bg-green-950/30 border-green-200/60 dark:border-green-800/40 text-green-700 dark:text-green-400'
-                : morningDone
-                  ? 'bg-indigo-50/40 dark:bg-indigo-950/20 border-indigo-200/50 dark:border-indigo-800/40 text-indigo-600 dark:text-indigo-400'
-                  : 'bg-muted/50 border-border/40 text-muted-foreground'
-            }`}>
-              <Moon className="w-4 h-4" />
-              <span>NightEcho</span>
-              {eveningDone
-                ? <span className="text-[10px] font-bold bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 px-1.5 py-0.5 rounded-full">✓</span>
-                : morningDone
-                  ? <span className="text-[10px] font-bold bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded-full">Bereit</span>
-                  : <span className="text-[10px] text-muted-foreground/60">offen</span>
-              }
-            </div>
-          </div>
+
 
           {/* Intention — nur wenn vorhanden */}
           {todayEntry?.morning_intention && (
@@ -317,7 +284,6 @@ export default function DashboardPage() {
           <div className="flex items-center gap-3">
             {([
               { done: morningDone, icon: '🌅', label: 'Morgen' },
-              { done: weeklyGoal.quickwins > 0, icon: '⚡', label: 'Quick Win' },
               { done: eveningDone, icon: '🌙', label: 'Abend' },
             ] as const).map(({ done, icon, label }) => (
               <div key={label} className="flex-1 flex flex-col items-center gap-1.5">
@@ -428,24 +394,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Streak + Ziel — füllt restlichen Raum */}
-          <div className="mt-auto flex flex-col gap-3">
-            {(profile.streak ?? 0) > 0 && (
-              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-200/60 dark:border-orange-900/40">
-                <span className="text-base">🔥</span>
-                <span className="text-sm font-bold text-orange-700 dark:text-orange-300">{profile.streak} Tage am Stück</span>
-                {(profile.longest_streak ?? 0) > (profile.streak ?? 0) && (
-                  <span className="ml-auto text-[10px] text-muted-foreground">Rekord: {profile.longest_streak}</span>
-                )}
-              </div>
-            )}
-            {profile.onboarding_goal && (
-              <div className="flex items-start gap-2 px-3 py-2.5 rounded-xl bg-primary/5 border border-primary/15">
-                <span className="text-sm shrink-0">🎯</span>
-                <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{profile.onboarding_goal}</p>
-              </div>
-            )}
-          </div>
+
         </div>
 
         {/* --- 5. Dashboard Calendar --- */}
